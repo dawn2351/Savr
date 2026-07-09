@@ -37,6 +37,9 @@ import com.zarnth.savr.presentation.root.components.RootFab
 import com.zarnth.savr.presentation.root.components.SearchTopBar
 import com.zarnth.savr.presentation.root.components.SelectionTopBar
 import com.zarnth.savr.presentation.search.SearchViewModel
+import com.zarnth.savr.presentation.home.components.LoadingProgress
+import com.zarnth.savr.presentation.setting.BrowserImportState
+import com.zarnth.savr.presentation.setting.ImportState
 import com.zarnth.savr.presentation.setting.SettingScreen
 import com.zarnth.savr.presentation.setting.SettingViewModel
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
@@ -262,6 +265,10 @@ fun RootScreen(
                 collectionSearchQuery = ""
             }
         }
+
+        val isImporting = settingState.browserImportState is BrowserImportState.Loading || settingState.importState is ImportState.Loading
+
+        LoadingProgress(isLoading = isImporting, blockTouch = true)
 
         if (state.showCollectionPicker) {
             CollectionPickerSheet(

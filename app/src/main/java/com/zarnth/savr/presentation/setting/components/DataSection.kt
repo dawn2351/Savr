@@ -1,18 +1,11 @@
 package com.zarnth.savr.presentation.setting.components
 
-import android.content.Intent
-import android.os.Build
-import android.provider.DocumentsContract
-import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.zarnth.savr.R
-import com.zarnth.savr.presentation.setting.BrowserImportState
-import com.zarnth.savr.presentation.setting.ExportState
-import com.zarnth.savr.presentation.setting.ImportState
 import com.zarnth.savr.presentation.setting.SettingEvents
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -23,58 +16,22 @@ import com.zarnth.savr.presentation.setting.SettingViewModel
 @Composable
 fun DataSection(
     state: SettingState,
-    viewModel: SettingViewModel,
-    importLauncher: ActivityResultLauncher<Intent>,
-    importBrowserLauncher: ActivityResultLauncher<Intent>
+    viewModel: SettingViewModel
 ) {
     Spacer(Modifier.height(12.dp))
     SectionHeader("Data")
     SettingItem(
         icon = R.drawable.backup_db,
-        title = "Backup bookmarks",
-        subtitle = "Save as JSON",
-        onClick = {
-            if (state.exportState !is ExportState.Loading) {
-                viewModel.onEvent(SettingEvents.ExportData)
-            }
-        }
+        title = "Export bookmarks",
+        subtitle = "JSON or HTML",
+        onClick = { viewModel.onEvent(SettingEvents.ShowExportSheet) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
         icon = R.drawable.import_icon,
-        title = "Restore bookmarks",
-        subtitle = if (state.importState is ImportState.Loading) "Importing..." else "Import from JSON",
-        onClick = {
-            if (state.importState !is ImportState.Loading) {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "application/json"
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentsContract.buildDocumentUri(
-                            "com.android.externalstorage.documents",
-                            "primary:Download/Savr"
-                        ))
-                    }
-                }
-                importLauncher.launch(intent)
-            }
-        }
-    )
-    Spacer(Modifier.height(4.dp))
-    SettingItem(
-        icon = R.drawable.browser_icon,
-        title = "Import from browser",
-        subtitle = if (state.browserImportState is BrowserImportState.Loading) "Importing..." else "Pick the .html file exported from browser",
-        onClick = {
-            if (state.browserImportState !is BrowserImportState.Loading) {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "text/html"
-                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/html", "text/plain"))
-                }
-                importBrowserLauncher.launch(intent)
-            }
-        }
+        title = "Import bookmarks",
+        subtitle = "JSON or HTML",
+        onClick = { viewModel.onEvent(SettingEvents.ShowImportSheet) }
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(

@@ -1,54 +1,49 @@
 <p align="center">
-  <img src="photos/savr_logo.png" alt="Savr" width="160">
+  <img src="photos/savr_logo.png" width="128" height="128" alt="Savr Logo">
 </p>
 
 <h1 align="center">Savr</h1>
 
 <p align="center">
-  <i>Paste a link. That's it.</i>
+  A no-nonsense bookmark app for Android. Paste a link. That's it.
 </p>
 
 <p align="center">
-  <img src="photos/coming_soon_ps.png" alt="Coming soon to Play Store" width="200">
-</p>
-
-<p align="center">
-  <b>Play Store release is under closed testing — please be patient :)</b>
+  <a href="http://play.google.com/store/apps/details?id=com.zarnth.savr">
+    <img src="photos/get_on_playstore.png" alt="Get it on Google Play" width="200">
+  </a>
 </p>
 
 ---
 
+## About
+
 Every bookmark app I tried was either crammed with stuff I'd never use or wanted me to pay monthly just to save a URL. So I built the thing I actually wanted: drop a link, grab the metadata, move on. No signups, no cloud, no tracker pestering you.
 
+## Features
 
-## What's in the box
+- **Auto Metadata** — Paste any URL and Savr grabs the title, description, and preview image automatically.
+- **Collections** — Group bookmarks without nested folders. Name it, throw links in, move on.
+- **Selection Mode** — Long-press a bookmark, then batch delete or move multiple at once.
+- **Quick Preview** — Tap any bookmark to see what's inside before opening it in your browser.
+- **Search** — Search through all your bookmarks by title or URL.
+- **Sort** — Sort by date added or alphabetically, ascending or descending.
+- **Custom Tap Action** — Set a single tap to preview, open in browser, or copy the link.
+- **Grid or List** — Cards or a compact list. Flip between them whenever.
+- **Export** — Export your data as JSON or HTML.
+- **Import** — Import from JSON or HTML files, including browser bookmark exports.
+- **Auto Backup** — Automatic daily backup to your Downloads folder.
+- **Material You** — Matches your wallpaper. Light, dark, or system default.
 
-- **Paste any URL.** => Savr grabs the title, description, and preview image. You don't lift a finger.
-- **Collections.** => Group bookmarks without dealing with nested folders. Name it, throw links in, move on.
-- **Selection mode.** => Long-press a bookmark, then batch delete or move multiple at once.
-- **Quick preview.** => Tap any bookmark to see what's inside before opening it in your browser.
-- **Material You colors.** => Matches your wallpaper. Light, dark, or system default.
-- **Custom tap action.** => Set a single tap to preview, open in browser, or copy the link.
-- **Grid or List.** => Cards or a compact list. Flip between them whenever.
-- **Backup & restore.** => Export or import everything as JSON. Your data, your call.
+## Previews
 
-## Screenshots
+| Home (Grid) | Home (List) | Collections |
+|:---:|:---:|:---:|
+| <img src="photos/home_grid.jpg" width="180"> | <img src="photos/home_list.jpg" width="180"> | <img src="photos/collection_screens.jpg" width="180"> |
 
-| Home (Grid) | Home (List) |
-|:-----------:|:-----------:|
-| <img src="photos/home_grid.jpg" alt="Home Grid" width="200"> | <img src="photos/home_list.jpg" alt="Home List" width="200"> |
-
-| Collections | Settings |
-|:-----------:|:--------:|
-| <img src="photos/collection_screens.jpg" alt="Collections" width="200"> | <img src="photos/setting_s.jpg" alt="Settings" width="200"> |
-
-| Image Preview | Light Theme |
-|:-------------:|:-----------:|
-| <img src="photos/image_prev.jpg" alt="Image Preview" width="200"> | <img src="photos/light_mode_1.jpg" alt="Light Theme" width="200"> |
-
-| Light Theme 2 | Light Theme 3 |
-|:-------------:|:-------------:|
-| <img src="photos/light_2.jpg" alt="Light Theme 2" width="200"> | <img src="photos/light_3.jpg" alt="Light Theme 3" width="200"> |
+| Settings | Image Preview | Light Theme |
+|:---:|:---:|:---:|
+| <img src="photos/setting_s.jpg" width="180"> | <img src="photos/image_prev.jpg" width="180"> | <img src="photos/light_mode_1.jpg" width="180"> |
 
 ## Stack
 
@@ -75,4 +70,3 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 [Open an issue](https://github.com/qeiq/Savr/issues). Or just say hi — I don't bite.
 
 If this app saves you even one headache, a star would mean a lot.
-

@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.zarnth.savr.openChromeTab
 import com.zarnth.savr.presentation.home.components.LoadingProgress
 import com.zarnth.savr.presentation.setting.components.AboutSection
 import com.zarnth.savr.presentation.setting.components.AutoBackupInfoDialog
@@ -28,6 +29,8 @@ import com.zarnth.savr.presentation.setting.components.CommunitySection
 import com.zarnth.savr.presentation.setting.components.DataSection
 import com.zarnth.savr.presentation.setting.components.GeneralSection
 import com.zarnth.savr.presentation.setting.components.InfoDialog
+import com.zarnth.savr.presentation.setting.components.LegalSection
+import com.zarnth.savr.presentation.setting.components.OptionSheet
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
 import com.zarnth.savr.presentation.setting.components.ThemeSection
 import com.zarnth.savr.ui.theme.ThemeMode
@@ -80,9 +83,27 @@ fun SettingScreen(
         }
     }
 
+    val exportHtmlLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/html")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val html = (state.browserExportState as? ExportState.Ready)?.json
+            if (html != null) {
+                context.contentResolver.openOutputStream(uri)?.use { it.write(html.toByteArray()) }
+            }
+        }
+        viewModel.onEvent(SettingEvents.DismissBrowserExport)
+    }
+
     LaunchedEffect(state.exportState) {
         if (state.exportState is ExportState.Ready) {
             exportLauncher.launch("savr_backup.json")
+        }
+    }
+
+    LaunchedEffect(state.browserExportState) {
+        if (state.browserExportState is ExportState.Ready) {
+            exportHtmlLauncher.launch("savr_bookmarks.html")
         }
     }
 
@@ -94,13 +115,14 @@ fun SettingScreen(
         ) {
             ThemeSection(state, viewModel)
             GeneralSection(state, viewModel)
-            DataSection(state, viewModel, importLauncher, importBrowserLauncher)
+            DataSection(state, viewModel)
             CommunitySection(context)
+            LegalSection(context)
             AboutSection(versionName)
         }
 
         LoadingProgress(
-            isLoading = state.exportState is ExportState.Loading || state.importState is ImportState.Loading || state.browserImportState is BrowserImportState.Loading
+            isLoading = state.exportState is ExportState.Loading || state.browserExportState is ExportState.Loading
         )
     }
 
@@ -186,6 +208,64 @@ fun SettingScreen(
             title = "Browser import failed",
             text = browserImportError.message,
             onDismiss = { viewModel.onEvent(SettingEvents.DismissBrowserImportResult) }
+        )
+    }
+
+    val browserExportError = state.browserExportState as? ExportState.Error
+    if (browserExportError != null) {
+        InfoDialog(
+            title = "Export as HTML failed",
+            text = browserExportError.message ?: "Export failed",
+            onDismiss = { viewModel.onEvent(SettingEvents.DismissBrowserExport) }
+        )
+    }
+
+    if (state.showExportSheet) {
+        OptionSheet(
+            title = "Export as",
+            options = listOf(
+                "JSON" to {
+                    viewModel.onEvent(SettingEvents.HideExportSheet)
+                    viewModel.onEvent(SettingEvents.ExportData)
+                },
+                "HTML" to {
+                    viewModel.onEvent(SettingEvents.HideExportSheet)
+                    viewModel.onEvent(SettingEvents.ExportBrowserBookmarks)
+                }
+            ),
+            onDismiss = { viewModel.onEvent(SettingEvents.HideExportSheet) }
+        )
+    }
+
+    if (state.showImportSheet) {
+        OptionSheet(
+            title = "Import from",
+            options = listOf(
+                "JSON" to {
+                    viewModel.onEvent(SettingEvents.HideImportSheet)
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "application/json"
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentsContract.buildDocumentUri(
+                                "com.android.externalstorage.documents",
+                                "primary:Download/Savr"
+                            ))
+                        }
+                    }
+                    importLauncher.launch(intent)
+                },
+                "HTML" to {
+                    viewModel.onEvent(SettingEvents.HideImportSheet)
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "text/html"
+                        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("text/html", "text/plain"))
+                    }
+                    importBrowserLauncher.launch(intent)
+                }
+            ),
+            onDismiss = { viewModel.onEvent(SettingEvents.HideImportSheet) }
         )
     }
 

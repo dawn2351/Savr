@@ -149,6 +149,30 @@ class SettingViewModel(
             SettingEvents.DismissBrowserImportResult -> {
                 _state.update { it.copy(browserImportState = BrowserImportState.Idle) }
             }
+
+            SettingEvents.ExportBrowserBookmarks -> {
+                exportBrowserData()
+            }
+
+            SettingEvents.DismissBrowserExport -> {
+                _state.update { it.copy(browserExportState = ExportState.Idle) }
+            }
+
+            SettingEvents.ShowExportSheet -> {
+                _state.update { it.copy(showExportSheet = true) }
+            }
+
+            SettingEvents.HideExportSheet -> {
+                _state.update { it.copy(showExportSheet = false) }
+            }
+
+            SettingEvents.ShowImportSheet -> {
+                _state.update { it.copy(showImportSheet = true) }
+            }
+
+            SettingEvents.HideImportSheet -> {
+                _state.update { it.copy(showImportSheet = false) }
+            }
         }
     }
 
@@ -176,11 +200,24 @@ class SettingViewModel(
         }
     }
 
+    private fun exportBrowserData() {
+        viewModelScope.launch {
+            _state.update { it.copy(browserExportState = ExportState.Loading) }
+            try {
+                val html = backupManager.generateExportHtml()
+                _state.update { it.copy(browserExportState = ExportState.Ready(html)) }
+            } catch (e: Exception) {
+                _state.update { it.copy(browserExportState = ExportState.Error(e.message ?: "Export failed")) }
+            }
+        }
+    }
+
     private fun importBrowserBookmarks(html: String) {
         viewModelScope.launch {
             _state.update { it.copy(browserImportState = BrowserImportState.Loading) }
             try {
                 val result = backupManager.importFromBrowserBookmarks(html)
+                backupManager.fetchMissingImages()
                 _state.update { it.copy(browserImportState = BrowserImportState.Success(result.imported, result.skipped, result.collections)) }
             } catch (e: Exception) {
                 _state.update { it.copy(browserImportState = BrowserImportState.Error(e.message ?: "Import failed")) }

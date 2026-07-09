@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import com.zarnth.savr.data.local.BackupBookmark
 import com.zarnth.savr.data.local.BackupCollection
 import com.zarnth.savr.data.local.BackupData
+import com.zarnth.savr.link_fetcher.LinkMetadataParser
 import com.zarnth.savr.data.local.dao.BookmarkDao
 import com.zarnth.savr.data.local.dao.CollectionDao
 import com.zarnth.savr.data.local.entity.BookmarkCollectionCrossRef
@@ -144,6 +145,58 @@ class BackupManager(
         return json.encodeToString(data)
     }
 
+    suspend fun generateExportHtml(): String {
+        val bookmarks = bookmarkDao.getBookmarksOnce()
+        val collections = collectionDao.getAllCollectionsRaw().first()
+        val sb = StringBuilder()
+        sb.appendLine("<!DOCTYPE NETSCAPE-Bookmark-file-1>")
+        sb.appendLine("<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\">")
+        sb.appendLine("<TITLE>Savr Bookmarks</TITLE>")
+        sb.appendLine("<H1>Savr Bookmarks</H1>")
+        sb.appendLine("<DL><p>")
+
+        val collectionBookmarkIds = mutableMapOf<Long, MutableSet<Long>>()
+        for (c in collections) {
+            val urls = collectionDao.getBookmarkUrlsForCollection(c.id)
+            val ids = bookmarks.filter { it.url in urls }.map { it.id }.toMutableSet()
+            collectionBookmarkIds[c.id] = ids
+        }
+
+        val assigned = mutableSetOf<Long>()
+        for (c in collections) {
+            val ids = collectionBookmarkIds[c.id] ?: continue
+            if (ids.isEmpty()) continue
+            assigned.addAll(ids)
+            sb.appendLine("<DT><H3>${escapeHtml(c.name)}</H3>")
+            sb.appendLine("<DL><p>")
+            for (bm in bookmarks.filter { it.id in ids }) {
+                sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\"${if (bm.title != null) ">${escapeHtml(bm.title)}" else ">${escapeHtml(bm.url)}"}</A>")
+            }
+            sb.appendLine("</DL><p>")
+        }
+
+        val unassigned = bookmarks.filter { it.id !in assigned }
+        if (unassigned.isNotEmpty()) {
+            sb.appendLine("<DT><H3>Uncategorized</H3>")
+            sb.appendLine("<DL><p>")
+            for (bm in unassigned) {
+                sb.appendLine("<DT><A HREF=\"${escapeHtml(bm.url)}\"${if (bm.title != null) ">${escapeHtml(bm.title)}" else ">${escapeHtml(bm.url)}"}</A>")
+            }
+            sb.appendLine("</DL><p>")
+        }
+
+        sb.appendLine("</DL><p>")
+        return sb.toString()
+    }
+
+    private fun escapeHtml(text: String): String {
+        return text
+            .replace("&", "&amp;")
+            .replace("\"", "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    }
+
     suspend fun importFromBrowserBookmarks(html: String): BrowserImportResult {
         val parser = BookmarkParser()
         val (parsedBookmarks, collectionNames) = parser.parse(html)
@@ -178,6 +231,19 @@ class BackupManager(
         }
 
         return BrowserImportResult(imported = imported, skipped = skipped, collections = collectionNames.size)
+    }
+
+    suspend fun fetchMissingImages() {
+        val parser = LinkMetadataParser()
+        val missing = bookmarkDao.getBookmarksWithoutImageOnce()
+        for (bm in missing) {
+            try {
+                val meta = parser.parse(bm.url)
+                if (!meta?.imageUrl.isNullOrBlank()) {
+                    bookmarkDao.updateImageUrl(bm.id, meta.imageUrl)
+                }
+            } catch (_: Exception) { }
+        }
     }
 
     suspend fun importFromJson(jsonString: String) {

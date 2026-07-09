@@ -22,4 +22,10 @@ sealed class SettingEvents {
     object DismissAutoBackupInfoDialog : SettingEvents()
     data class ImportBrowserBookmarks(val html: String) : SettingEvents()
     object DismissBrowserImportResult : SettingEvents()
+    object ExportBrowserBookmarks : SettingEvents()
+    object DismissBrowserExport : SettingEvents()
+    object ShowExportSheet : SettingEvents()
+    object HideExportSheet : SettingEvents()
+    object ShowImportSheet : SettingEvents()
+    object HideImportSheet : SettingEvents()
 }
