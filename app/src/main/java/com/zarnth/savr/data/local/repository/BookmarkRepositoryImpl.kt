@@ -25,6 +25,10 @@ class BookmarkRepositoryImpl(
         return dao.insertOrUnhide(bookmark.toEntity())
     }
 
+    override suspend fun existsByUrl(url: String): Boolean {
+        return dao.existsByUrl(url)
+    }
+
     override suspend fun getBookmarksWithoutImage(): List<Bookmark> {
         return dao.getBookmarksWithoutImageOnce().map { it.toDomain() }
     }

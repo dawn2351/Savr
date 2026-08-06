@@ -25,4 +25,7 @@ sealed class HomeEvents {
     data class SetSortOrder(val sortOrder: SortOrder) : HomeEvents()
     object ShowSortSheet : HomeEvents()
     object HideSortSheet : HomeEvents()
+    data class ClipboardDetected(val text: String?) : HomeEvents()
+    object DismissClipboardSheet : HomeEvents()
+    object AddClipboardBookmark : HomeEvents()
 }

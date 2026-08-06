@@ -3,6 +3,13 @@ package com.zarnth.savr.presentation.home
 import com.zarnth.savr.domain.model.Bookmark
 import com.zarnth.savr.domain.model.SortOrder
 
+data class ClipboardSuggestion(
+    val url: String,
+    val title: String? = null,
+    val description: String? = null,
+    val imageUrl: String? = null
+)
+
 data class HomeState(
     val isLoading: Boolean = false,
     val error: String = "",
@@ -19,5 +26,7 @@ data class HomeState(
     val collections: List<com.zarnth.savr.domain.model.Collection> = emptyList(),
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
     val showSortSheet: Boolean = false,
-    val duplicateToastKey: Int = 0
+    val duplicateToastKey: Int = 0,
+    val clipboardSuggestion: ClipboardSuggestion? = null,
+    val isClipboardLoading: Boolean = false
 )

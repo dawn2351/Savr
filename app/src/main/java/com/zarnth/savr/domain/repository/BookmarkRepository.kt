@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     suspend fun insert(bookmark: Bookmark): Boolean
+    suspend fun existsByUrl(url: String): Boolean
     fun getBookmarks(): Flow<Resource<List<Bookmark>>>
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
     suspend fun hideBookmarks(ids: List<Long>)

@@ -1,5 +1,7 @@
 package com.zarnth.savr.presentation.root
 
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,20 +9,26 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.zarnth.savr.domain.model.SortOrder
 import com.zarnth.savr.navigation.AppNavHost
 import com.zarnth.savr.presentation.collection.CollectionDetailScreen
@@ -31,6 +39,7 @@ import com.zarnth.savr.presentation.collection.components.CollectionPickerSheet
 import com.zarnth.savr.presentation.home.HomeEvents
 import com.zarnth.savr.presentation.home.HomeScreen
 import com.zarnth.savr.presentation.home.HomeViewModel
+import com.zarnth.savr.presentation.home.components.ClipboardAddSheet
 import com.zarnth.savr.presentation.root.components.DefaultTopBar
 import com.zarnth.savr.presentation.root.components.RootBottomBar
 import com.zarnth.savr.presentation.root.components.RootFab
@@ -44,6 +53,8 @@ import com.zarnth.savr.presentation.setting.SettingScreen
 import com.zarnth.savr.presentation.setting.SettingViewModel
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
 import com.zarnth.savr.ui.theme.SavrTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,6 +92,38 @@ fun RootScreen(
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipboardScope = rememberCoroutineScope()
+
+    DisposableEffect(lifecycleOwner, clipboardManager) {
+        fun checkClipboard() {
+            clipboardScope.launch {
+                delay(350)
+                val clipboardText = getClipboardText(context)
+                viewModel.homeEvents(HomeEvents.ClipboardDetected(clipboardText))
+            }
+        }
+
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                checkClipboard()
+            }
+        }
+
+        val clipListener = ClipboardManager.OnPrimaryClipChangedListener {
+            checkClipboard()
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        clipboardManager.addPrimaryClipChangedListener(clipListener)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            clipboardManager.removePrimaryClipChangedListener(clipListener)
+        }
+    }
 
     LaunchedEffect(isSearching) {
         if (isSearching) focusRequester.requestFocus()
@@ -307,5 +350,21 @@ fun RootScreen(
                 onDismiss = { collectionViewModel.onEvent(CollectionEvents.HideSortSheet) }
             )
         }
+
+        state.clipboardSuggestion?.let { suggestion ->
+            ClipboardAddSheet(
+                suggestion = suggestion,
+                isLoading = state.isClipboardLoading,
+                onDismissRequest = { viewModel.homeEvents(HomeEvents.DismissClipboardSheet) },
+                onAddClick = { viewModel.homeEvents(HomeEvents.AddClipboardBookmark) }
+            )
+        }
     }
+}
+
+private fun getClipboardText(context: Context): String? {
+    val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return null
+    val clip = manager.primaryClip ?: return null
+    if (clip.itemCount == 0) return null
+    return clip.getItemAt(0).coerceToText(context)?.toString()
 }

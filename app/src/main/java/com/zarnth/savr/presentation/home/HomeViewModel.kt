@@ -1,6 +1,5 @@
 package com.zarnth.savr.presentation.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zarnth.savr.domain.model.Bookmark
@@ -22,6 +21,7 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     private val parser = LinkMetadataParser()
     private var rawBookmarks: List<Bookmark> = emptyList()
     private var isFetchingMetadata = false
+    private var lastClipboardText: String? = null
 
     init {
         loadBookmarks()
@@ -160,6 +160,18 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
             HomeEvents.HideSortSheet -> {
                 _state.update { it.copy(showSortSheet = false) }
             }
+
+            is HomeEvents.ClipboardDetected -> {
+                onClipboardDetected(events.text)
+            }
+
+            HomeEvents.DismissClipboardSheet -> {
+                _state.update { it.copy(clipboardSuggestion = null, isClipboardLoading = false) }
+            }
+
+            HomeEvents.AddClipboardBookmark -> {
+                addClipboardBookmark()
+            }
         }
     }
 
@@ -245,6 +257,72 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                 )
             }
         }
+    }
+
+    private fun onClipboardDetected(text: String?) {
+        if (text.isNullOrBlank()) return
+        if (text == lastClipboardText) return
+        lastClipboardText = text
+        val url = extractUrlFromText(text) ?: return
+        viewModelScope.launch {
+            if (repository.existsByUrl(url)) return@launch
+            _state.update {
+                it.copy(
+                    clipboardSuggestion = ClipboardSuggestion(url = url),
+                    isClipboardLoading = true
+                )
+            }
+            try {
+                val meta = parser.parse(url)
+                val current = _state.value.clipboardSuggestion ?: return@launch
+                _state.update {
+                    it.copy(
+                        isClipboardLoading = false,
+                        clipboardSuggestion = current.copy(
+                            title = meta?.title ?: current.title,
+                            description = meta?.description ?: current.description,
+                            imageUrl = meta?.imageUrl ?: current.imageUrl
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isClipboardLoading = false) }
+            }
+        }
+    }
+
+    private fun addClipboardBookmark() {
+        val suggestion = _state.value.clipboardSuggestion ?: return
+        viewModelScope.launch {
+            try {
+                val inserted = repository.insert(
+                    Bookmark(
+                        url = suggestion.url,
+                        title = suggestion.title,
+                        description = suggestion.description,
+                        imageUrl = suggestion.imageUrl
+                    )
+                )
+                _state.update {
+                    it.copy(
+                        clipboardSuggestion = null,
+                        duplicateToastKey = if (inserted) it.duplicateToastKey else it.duplicateToastKey + 1
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Unknown error") }
+            }
+        }
+    }
+
+    private fun extractUrlFromText(text: String): String? {
+        val schemeMatch = Regex("""(https?://[^\s<>"']+)""", RegexOption.IGNORE_CASE).find(text)
+        val raw = schemeMatch?.value ?: text.trim()
+        if (raw.isBlank()) return null
+        val cleaned = raw.trim().trimEnd('.', ',', ';', '!', '?', ')', ']', '}')
+        if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) return cleaned
+        if (cleaned.contains(".") && !cleaned.contains(" ")) return "https://$cleaned"
+        return null
     }
 
     private fun loadBookmarks() {
