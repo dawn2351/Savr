@@ -5,18 +5,16 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import com.zarnth.savr.data.local.entity.BookmarkCollectionCrossRef
+import com.zarnth.savr.data.local.entity.BookmarkEntity
 import com.zarnth.savr.data.local.entity.CollectionEntity
-import com.zarnth.savr.data.local.entity.CollectionWithBookmarks
 import kotlinx.coroutines.flow.Flow
 
 data class CollectionWithCount(
     val id: Long,
     val name: String,
     val createdAt: Long,
-    val bookmarkCount: Int,
-    val previewUrls: String?
+    val bookmarkCount: Int
 )
 
 @Dao
@@ -29,12 +27,7 @@ interface CollectionDao {
     suspend fun deleteCollection(collection: CollectionEntity)
 
     @Query("""
-        SELECT c.id, c.name, c.createdAt, COUNT(bcc.collectionId) AS bookmarkCount,
-               (SELECT GROUP_CONCAT(b.imageUrl, '|||')
-                FROM bookmark_collection_cross_ref bcc2
-                INNER JOIN bookmarks b ON bcc2.bookmarkId = b.id
-                WHERE bcc2.collectionId = c.id AND b.imageUrl IS NOT NULL AND b.imageUrl != ''
-                LIMIT 4) AS previewUrls
+        SELECT c.id, c.name, c.createdAt, COUNT(bcc.collectionId) AS bookmarkCount
         FROM collections c
         LEFT JOIN bookmark_collection_cross_ref bcc ON c.id = bcc.collectionId
         GROUP BY c.id
@@ -42,9 +35,23 @@ interface CollectionDao {
     """)
     fun getAllCollections(): Flow<List<CollectionWithCount>>
 
-    @Transaction
-    @Query("SELECT * FROM collections WHERE id = :collectionId")
-    fun getCollectionWithBookmarks(collectionId: Long): Flow<CollectionWithBookmarks?>
+    @Query("""
+        SELECT b.imageUrl FROM bookmarks b
+        INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId
+          AND b.imageUrl IS NOT NULL AND b.imageUrl != ''
+        ORDER BY b.createdAt DESC
+        LIMIT 4
+    """)
+    suspend fun getPreviewUrlsForCollection(collectionId: Long): List<String>
+
+    @Query("""
+        SELECT b.* FROM bookmarks b
+        INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId
+        ORDER BY b.createdAt DESC
+    """)
+    fun getBookmarksInCollection(collectionId: Long): Flow<List<BookmarkEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addBookmarkToCollection(crossRef: BookmarkCollectionCrossRef)

@@ -11,6 +11,8 @@ import com.zarnth.savr.domain.repository.BookmarkRepository
 import com.zarnth.savr.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 
@@ -57,15 +59,27 @@ class BookmarkRepositoryImpl(
 
     override fun getAllCollections(): Flow<Resource<List<Collection>>> {
         return collectionDao.getAllCollections()
-            .map { list -> Resource.Success(list.map { it.toDomain() }) as Resource<List<Collection>> }
+            .flatMapLatest { collections ->
+                flow {
+                    val result = collections.map { c ->
+                        Collection(
+                            id = c.id,
+                            name = c.name,
+                            bookmarkCount = c.bookmarkCount,
+                            previewUrls = collectionDao.getPreviewUrlsForCollection(c.id)
+                        )
+                    }
+                    emit(Resource.Success(result) as Resource<List<Collection>>)
+                }
+            }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
     }
 
     override fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>> {
-        return collectionDao.getCollectionWithBookmarks(collectionId)
-            .map { result ->
-                Resource.Success(result?.bookmarks?.map { it.toDomain() } ?: emptyList()) as Resource<List<Bookmark>>
+        return collectionDao.getBookmarksInCollection(collectionId)
+            .map { list ->
+                Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>>
             }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
