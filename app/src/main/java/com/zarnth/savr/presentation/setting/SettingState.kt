@@ -37,6 +37,7 @@ data class SettingState(
     val viewMode: ViewMode = ViewMode.GRID,
     val showViewModeSheet: Boolean = false,
     val autoBackupEnabled: Boolean = false,
+    val quickSaveEnabled: Boolean = false,
     val lastBackupTimeText: String = "",
     val showAutoBackupInfoDialog: Boolean = false,
     val exportState: ExportState = ExportState.Idle,

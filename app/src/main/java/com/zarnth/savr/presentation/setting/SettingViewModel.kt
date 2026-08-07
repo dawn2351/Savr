@@ -26,7 +26,8 @@ class SettingViewModel(
             dynamicColor = settingsRepository.getDynamicColor(),
             isDynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
             viewMode = settingsRepository.getViewMode(),
-            autoBackupEnabled = settingsRepository.getAutoBackupEnabled()
+            autoBackupEnabled = settingsRepository.getAutoBackupEnabled(),
+            quickSaveEnabled = settingsRepository.getQuickSaveEnabled()
         )
     )
     val state = _state.asStateFlow()
@@ -140,6 +141,11 @@ class SettingViewModel(
 
             SettingEvents.DismissAutoBackupInfoDialog -> {
                 _state.update { it.copy(showAutoBackupInfoDialog = false) }
+            }
+
+            is SettingEvents.ToggleQuickSave -> {
+                settingsRepository.setQuickSaveEnabled(event.enabled)
+                _state.update { it.copy(quickSaveEnabled = event.enabled) }
             }
 
             is SettingEvents.ImportBrowserBookmarks -> {

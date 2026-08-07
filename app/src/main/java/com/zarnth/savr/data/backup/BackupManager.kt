@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -235,14 +236,21 @@ class BackupManager(
 
     suspend fun fetchMissingImages() {
         val parser = LinkMetadataParser()
-        val missing = bookmarkDao.getBookmarksWithoutImageOnce()
-        for (bm in missing) {
-            try {
-                val meta = parser.parse(bm.url)
-                if (!meta?.imageUrl.isNullOrBlank()) {
-                    bookmarkDao.updateImageUrl(bm.id, meta.imageUrl)
-                }
-            } catch (_: Exception) { }
+        val missing = bookmarkDao.getBookmarksMissingMetadataOnce()
+        withContext(Dispatchers.IO) {
+            for (bm in missing) {
+                try {
+                    val meta = parser.parse(bm.url)
+                    if (meta != null) {
+                        bookmarkDao.updateMetadata(
+                            id = bm.id,
+                            title = meta.title?.takeIf { it.isNotBlank() } ?: bm.title,
+                            description = meta.description?.takeIf { it.isNotBlank() } ?: bm.description,
+                            imageUrl = meta.imageUrl?.takeIf { it.isNotBlank() } ?: bm.imageUrl
+                        )
+                    }
+                } catch (_: Exception) { }
+            }
         }
     }
 

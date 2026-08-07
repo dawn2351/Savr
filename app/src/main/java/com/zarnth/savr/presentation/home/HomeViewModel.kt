@@ -8,11 +8,14 @@ import com.zarnth.savr.domain.repository.BookmarkRepository
 import com.zarnth.savr.link_fetcher.LinkMetadataParser
 import com.zarnth.savr.domain.model.SortOrder
 import com.zarnth.savr.utils.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
@@ -359,18 +362,26 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     }
 
     private fun fetchMissingMetadataOnStart() {
-        viewModelScope.launch {
-            val missing = repository.getBookmarksWithoutImage()
+        viewModelScope.launch(Dispatchers.IO) {
+            val missing = repository.getBookmarksMissingMetadata()
             if (missing.isEmpty() || isFetchingMetadata) return@launch
             isFetchingMetadata = true
+            val semaphore = Semaphore(3)
             missing.map { bm ->
                 async {
-                    try {
-                        val meta = parser.parse(bm.url)
-                        if (!meta?.imageUrl.isNullOrBlank()) {
-                            repository.updateImageUrl(bm.id, meta.imageUrl)
-                        }
-                    } catch (_: Exception) { }
+                    semaphore.withPermit {
+                        try {
+                            val meta = parser.parse(bm.url)
+                            if (meta != null) {
+                                repository.updateMetadata(
+                                    id = bm.id,
+                                    title = meta.title?.takeIf { it.isNotBlank() } ?: bm.title,
+                                    description = meta.description?.takeIf { it.isNotBlank() } ?: bm.description,
+                                    imageUrl = meta.imageUrl?.takeIf { it.isNotBlank() } ?: bm.imageUrl
+                                )
+                            }
+                        } catch (_: Exception) { }
+                    }
                 }
             }.forEach { it.await() }
             isFetchingMetadata = false

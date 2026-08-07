@@ -37,8 +37,14 @@ interface BookmarkDao {
     @Query("UPDATE bookmarks SET imageUrl = :imageUrl WHERE id = :id")
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
 
+    @Query("UPDATE bookmarks SET title = :title, description = :description, imageUrl = :imageUrl WHERE id = :id")
+    suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?)
+
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
     suspend fun getBookmarksOnce(): List<BookmarkEntity>
+
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (title IS NULL OR title = '' OR description IS NULL OR description = '')")
+    suspend fun getBookmarksMissingMetadataOnce(): List<BookmarkEntity>
 
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (imageUrl IS NULL OR imageUrl = '')")
     suspend fun getBookmarksWithoutImageOnce(): List<BookmarkEntity>

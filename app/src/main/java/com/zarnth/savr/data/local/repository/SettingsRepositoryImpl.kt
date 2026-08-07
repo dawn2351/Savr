@@ -16,6 +16,7 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         private const val KEY_VIEW_MODE = "view_mode"
         private const val KEY_AUTO_BACKUP = "auto_backup"
+        private const val KEY_QUICK_SAVE = "quick_save"
     }
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -61,5 +62,13 @@ class SettingsRepositoryImpl(private val context: Context) : SettingsRepository 
 
     override fun setAutoBackupEnabled(enabled: Boolean) {
         prefs.edit { putBoolean(KEY_AUTO_BACKUP, enabled) }
+    }
+
+    override fun getQuickSaveEnabled(): Boolean {
+        return prefs.getBoolean(KEY_QUICK_SAVE, false)
+    }
+
+    override fun setQuickSaveEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_QUICK_SAVE, enabled) }
     }
 }

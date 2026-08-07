@@ -33,6 +33,10 @@ class BookmarkRepositoryImpl(
         return dao.getBookmarksWithoutImageOnce().map { it.toDomain() }
     }
 
+    override suspend fun getBookmarksMissingMetadata(): List<Bookmark> {
+        return dao.getBookmarksMissingMetadataOnce().map { it.toDomain() }
+    }
+
     override suspend fun hideBookmarks(ids: List<Long>) {
         dao.hideBookmarks(ids)
     }
@@ -103,5 +107,9 @@ class BookmarkRepositoryImpl(
 
     override suspend fun updateImageUrl(id: Long, imageUrl: String?) {
         dao.updateImageUrl(id, imageUrl)
+    }
+
+    override suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?) {
+        dao.updateMetadata(id, title, description, imageUrl)
     }
 }

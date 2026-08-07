@@ -2,6 +2,9 @@ package com.zarnth.savr.presentation.setting.components
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -32,5 +35,22 @@ fun GeneralSection(state: SettingState, viewModel: SettingViewModel) {
         title = "View mode",
         subtitle = if (state.viewMode == ViewMode.GRID) "Grid" else "List",
         onClick = { viewModel.onEvent(SettingEvents.ShowViewModeSheet) }
+    )
+    Spacer(Modifier.height(4.dp))
+    SettingItem(
+        icon = R.drawable.bookmark_add,
+        title = "Quick save shared links",
+        subtitle = if (state.quickSaveEnabled) "On" else "Off",
+        trailing = {
+            Switch(
+                checked = state.quickSaveEnabled,
+                onCheckedChange = { viewModel.onEvent(SettingEvents.ToggleQuickSave(it)) },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            )
+        },
+        onClick = { viewModel.onEvent(SettingEvents.ToggleQuickSave(!state.quickSaveEnabled)) }
     )
 }

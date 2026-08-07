@@ -15,4 +15,6 @@ interface SettingsRepository {
     fun setViewMode(mode: ViewMode)
     fun getAutoBackupEnabled(): Boolean
     fun setAutoBackupEnabled(enabled: Boolean)
+    fun getQuickSaveEnabled(): Boolean
+    fun setQuickSaveEnabled(enabled: Boolean)
 }

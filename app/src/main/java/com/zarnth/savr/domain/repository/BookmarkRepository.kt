@@ -10,6 +10,7 @@ interface BookmarkRepository {
     suspend fun existsByUrl(url: String): Boolean
     fun getBookmarks(): Flow<Resource<List<Bookmark>>>
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
+    suspend fun getBookmarksMissingMetadata(): List<Bookmark>
     suspend fun hideBookmarks(ids: List<Long>)
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
 
@@ -21,4 +22,5 @@ interface BookmarkRepository {
     suspend fun addBookmarksToCollection(bookmarkIds: List<Long>, collectionId: Long)
     suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long)
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
+    suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?)
 }
