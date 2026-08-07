@@ -24,6 +24,7 @@ fun ThemeSection(state: SettingState, viewModel: SettingViewModel) {
             ThemeMode.LIGHT -> "Light"
             ThemeMode.DARK -> "Dark"
             ThemeMode.SYSTEM -> "System"
+            ThemeMode.AMOLED -> "Amoled"
         },
         onClick = { viewModel.onEvent(SettingEvents.ShowThemeSheet) }
     )

@@ -8,18 +8,41 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
 
-enum class ThemeMode { LIGHT, DARK, SYSTEM }
+enum class ThemeMode { LIGHT, DARK, SYSTEM, AMOLED }
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
+)
+
+private val AmoledColorScheme = darkColorScheme(
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80,
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color.Black,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF1C1B1F),
+    onSurfaceVariant = Color(0xFFCAC4D0),
+    surfaceContainer = Color.Black,
+    surfaceContainerHigh = Color(0xFF0A0A0A),
+    surfaceContainerHighest = Color(0xFF141414),
+    surfaceContainerLow = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceBright = Color(0xFF141414),
+    surfaceDim = Color.Black,
+    inverseSurface = Color(0xFFE6E1E6),
+    inverseOnSurface = Color(0xFF141414),
+    inversePrimary = Purple40
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -48,9 +71,11 @@ fun SavrTheme(
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.AMOLED -> true
     }
 
     val colorScheme = when {
+        ThemeMode.AMOLED == themeMode -> AmoledColorScheme
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)

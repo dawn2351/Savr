@@ -132,6 +132,7 @@ fun SettingScreen(
             options = listOf(
                 "Light" to ThemeMode.LIGHT,
                 "Dark" to ThemeMode.DARK,
+                "Amoled" to ThemeMode.AMOLED,
                 "System default" to ThemeMode.SYSTEM
             ),
             current = state.themeMode,
