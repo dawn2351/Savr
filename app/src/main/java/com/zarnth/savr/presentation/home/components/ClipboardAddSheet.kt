@@ -217,6 +217,7 @@ fun ClipboardAddSheet(
 
             Button(
                 onClick = onAddClick,
+                enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Add Bookmark")
