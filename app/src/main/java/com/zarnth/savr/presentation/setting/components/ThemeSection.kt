@@ -28,7 +28,7 @@ fun ThemeSection(state: SettingState, viewModel: SettingViewModel) {
         },
         onClick = { viewModel.onEvent(SettingEvents.ShowThemeSheet) }
     )
-    if (state.isDynamicColorSupported) {
+    if (state.isDynamicColorSupported && state.themeMode != ThemeMode.AMOLED) {
         Spacer(Modifier.height(4.dp))
         SettingItem(
             icon = R.drawable.dynamic_one,
