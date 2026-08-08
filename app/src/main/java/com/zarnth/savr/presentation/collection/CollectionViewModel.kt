@@ -96,6 +96,41 @@ class CollectionViewModel(
                 _state.update { it.copy(tempBookmark = null, isDetailBodySheet = false) }
             }
 
+            is CollectionEvents.ShowEditBookmarkSheet -> {
+                _state.update {
+                    it.copy(
+                        isDetailBodySheet = false,
+                        editingBookmark = event.bookmark,
+                        editTitle = event.bookmark.title ?: "",
+                        editDescription = event.bookmark.description ?: "",
+                        isEditBookmarkSheet = true
+                    )
+                }
+            }
+
+            CollectionEvents.HideEditBookmarkSheet -> {
+                _state.update {
+                    it.copy(
+                        isEditBookmarkSheet = false,
+                        editingBookmark = null,
+                        editTitle = "",
+                        editDescription = ""
+                    )
+                }
+            }
+
+            is CollectionEvents.EditTitleChanged -> {
+                _state.update { it.copy(editTitle = event.text) }
+            }
+
+            is CollectionEvents.EditDescriptionChanged -> {
+                _state.update { it.copy(editDescription = event.text) }
+            }
+
+            CollectionEvents.SaveEditedBookmark -> {
+                saveEditedBookmark()
+            }
+
             is CollectionEvents.ToggleDetailSelection -> {
                 val current = _state.value
                 val newSelected = if (event.id in current.detailSelectedIds) {
@@ -173,6 +208,19 @@ class CollectionViewModel(
                         _state.update { it.copy(isDetailLoading = false, collectionBookmarks = sortBookmarks(items, sortOrder)) }
                     }
                 }
+            }
+        }
+    }
+
+    private fun saveEditedBookmark() {
+        val bookmark = _state.value.editingBookmark ?: return
+        val title = _state.value.editTitle.trim().ifBlank { null }
+        val description = _state.value.editDescription.trim().ifBlank { null }
+        viewModelScope.launch {
+            try {
+                repository.updateTitleAndDescription(bookmark.id, title, description)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Update failed") }
             }
         }
     }

@@ -48,7 +48,8 @@ fun BookmarkPreviewSheet(
     showBottomSheet: Boolean,
     onDismissRequest: () -> Unit,
     openInBrowser: () -> Unit,
-    copyLinkButtonClick: () -> Unit
+    copyLinkButtonClick: () -> Unit,
+    onEditClick: () -> Unit
 ) {
     val context = LocalContext.current
     if (!showBottomSheet) return
@@ -57,6 +58,28 @@ fun BookmarkPreviewSheet(
         onDismissRequest = onDismissRequest,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
+        ListItem(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.extraLarge)
+                .clickable {
+                    onEditClick()
+                    onDismissRequest()
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            headlineContent = {
+                Text("Edit")
+            },
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.edit_icon),
+                    contentDescription = "Edit"
+                )
+            }
+        )
         ListItem(
             modifier = Modifier
                 .padding(8.dp)

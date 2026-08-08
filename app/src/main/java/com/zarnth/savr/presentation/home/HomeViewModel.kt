@@ -87,6 +87,44 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                 }
             }
 
+            HomeEvents.ShowEditBookmarkSheet -> {
+                val bookmark = _state.value.tempBookmark
+                if (bookmark != null) {
+                    _state.update {
+                        it.copy(
+                            isBodySheet = false,
+                            editingBookmark = bookmark,
+                            editTitle = bookmark.title ?: "",
+                            editDescription = bookmark.description ?: "",
+                            isEditBookmarkSheet = true
+                        )
+                    }
+                }
+            }
+
+            HomeEvents.HideEditBookmarkSheet -> {
+                _state.update {
+                    it.copy(
+                        isEditBookmarkSheet = false,
+                        editingBookmark = null,
+                        editTitle = "",
+                        editDescription = ""
+                    )
+                }
+            }
+
+            is HomeEvents.EditTitleChanged -> {
+                _state.update { it.copy(editTitle = events.text) }
+            }
+
+            is HomeEvents.EditDescriptionChanged -> {
+                _state.update { it.copy(editDescription = events.text) }
+            }
+
+            HomeEvents.SaveEditedBookmark -> {
+                saveEditedBookmark()
+            }
+
             is HomeEvents.ToggleSelection -> {
                 val current = _state.value
                 val newSelected = if (events.id in current.selectedIds) {
@@ -194,6 +232,19 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                 _state.update {
                     it.copy(error = e.message ?: "Delete failed")
                 }
+            }
+        }
+    }
+
+    private fun saveEditedBookmark() {
+        val bookmark = _state.value.editingBookmark ?: return
+        val title = _state.value.editTitle.trim().ifBlank { null }
+        val description = _state.value.editDescription.trim().ifBlank { null }
+        viewModelScope.launch {
+            try {
+                repository.updateTitleAndDescription(bookmark.id, title, description)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Update failed") }
             }
         }
     }

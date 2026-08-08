@@ -40,6 +40,7 @@ import com.zarnth.savr.presentation.home.HomeEvents
 import com.zarnth.savr.presentation.home.HomeScreen
 import com.zarnth.savr.presentation.home.HomeViewModel
 import com.zarnth.savr.presentation.home.components.ClipboardAddSheet
+import com.zarnth.savr.presentation.home.components.EditBookmarkSheet
 import com.zarnth.savr.presentation.root.components.DefaultTopBar
 import com.zarnth.savr.presentation.root.components.RootBottomBar
 import com.zarnth.savr.presentation.root.components.RootFab
@@ -357,6 +358,35 @@ fun RootScreen(
                 isLoading = state.isClipboardLoading,
                 onDismissRequest = { viewModel.homeEvents(HomeEvents.DismissClipboardSheet) },
                 onAddClick = { viewModel.homeEvents(HomeEvents.AddClipboardBookmark) }
+            )
+        }
+
+        val isEditActive = state.isEditBookmarkSheet || collectionState.isEditBookmarkSheet
+        if (isEditActive) {
+            val editingFromHome = state.isEditBookmarkSheet
+            val editingBookmark = if (editingFromHome) state.editingBookmark else collectionState.editingBookmark
+            EditBookmarkSheet(
+                showBottomSheet = true,
+                onDismissRequest = {
+                    if (editingFromHome) viewModel.homeEvents(HomeEvents.HideEditBookmarkSheet)
+                    else collectionViewModel.onEvent(CollectionEvents.HideEditBookmarkSheet)
+                },
+                titleValue = if (editingFromHome) state.editTitle else collectionState.editTitle,
+                onTitleChange = {
+                    if (editingFromHome) viewModel.homeEvents(HomeEvents.EditTitleChanged(it))
+                    else collectionViewModel.onEvent(CollectionEvents.EditTitleChanged(it))
+                },
+                descriptionValue = if (editingFromHome) state.editDescription else collectionState.editDescription,
+                onDescriptionChange = {
+                    if (editingFromHome) viewModel.homeEvents(HomeEvents.EditDescriptionChanged(it))
+                    else collectionViewModel.onEvent(CollectionEvents.EditDescriptionChanged(it))
+                },
+                onSaveClick = {
+                    if (editingFromHome) viewModel.homeEvents(HomeEvents.SaveEditedBookmark)
+                    else collectionViewModel.onEvent(CollectionEvents.SaveEditedBookmark)
+                },
+                url = editingBookmark?.url.orEmpty(),
+                imageUrl = editingBookmark?.imageUrl
             )
         }
     }

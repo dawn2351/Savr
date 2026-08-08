@@ -14,6 +14,12 @@ sealed class HomeEvents {
     data class BookmarkPreviewClick(val bookmark: Bookmark) : HomeEvents()
     object BookmarkPreviewDismissClick : HomeEvents()
 
+    object ShowEditBookmarkSheet : HomeEvents()
+    object HideEditBookmarkSheet : HomeEvents()
+    data class EditTitleChanged(val text: String) : HomeEvents()
+    data class EditDescriptionChanged(val text: String) : HomeEvents()
+    object SaveEditedBookmark : HomeEvents()
+
     data class ToggleSelection(val id: Long) : HomeEvents()
     object SelectAll : HomeEvents()
     object DeselectAll : HomeEvents()

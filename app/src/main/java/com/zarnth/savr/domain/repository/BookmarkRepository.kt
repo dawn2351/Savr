@@ -23,4 +23,5 @@ interface BookmarkRepository {
     suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long)
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
     suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?)
+    suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?)
 }

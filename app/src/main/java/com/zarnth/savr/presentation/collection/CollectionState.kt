@@ -19,6 +19,10 @@ data class CollectionState(
     val isDetailSelectionMode: Boolean = false,
     val tempBookmark: Bookmark? = null,
     val isDetailBodySheet: Boolean = false,
+    val editingBookmark: Bookmark? = null,
+    val isEditBookmarkSheet: Boolean = false,
+    val editTitle: String = "",
+    val editDescription: String = "",
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
     val showSortSheet: Boolean = false
 )

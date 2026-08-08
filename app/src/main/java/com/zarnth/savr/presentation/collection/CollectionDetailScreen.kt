@@ -195,6 +195,9 @@ fun CollectionDetailScreen(
             state.tempBookmark?.url?.let {
                 clipboardManager.nativeClipboard.text = it
             }
+        },
+        onEditClick = {
+            state.tempBookmark?.let { viewModel.onEvent(CollectionEvents.ShowEditBookmarkSheet(it)) }
         }
     )
 }

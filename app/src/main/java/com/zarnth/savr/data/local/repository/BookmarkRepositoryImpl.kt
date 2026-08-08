@@ -112,4 +112,8 @@ class BookmarkRepositoryImpl(
     override suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?) {
         dao.updateMetadata(id, title, description, imageUrl)
     }
+
+    override suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?) {
+        dao.updateTitleAndDescription(id, title, description)
+    }
 }
