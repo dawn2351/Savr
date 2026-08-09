@@ -6,10 +6,10 @@ plugins {
 }
 
 val releaseVersionCode: Int =
-    (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 5
+    (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 1000055
 
 val releaseVersionName: String =
-    (project.findProperty("versionName") as? String) ?: "1.2"
+    (project.findProperty("versionName") as? String) ?: "1.3"
 
 val hasReleaseSigning = listOf(
     "SAVR_KEYSTORE_FILE",
