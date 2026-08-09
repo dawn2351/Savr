@@ -105,7 +105,8 @@ fun EditBookmarkSheet(
                     text = "Edit Bookmark",
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 IconButton(onClick = onDismissRequest) {
                     Icon(

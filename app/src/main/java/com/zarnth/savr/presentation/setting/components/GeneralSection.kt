@@ -38,7 +38,7 @@ fun GeneralSection(state: SettingState, viewModel: SettingViewModel) {
     )
     Spacer(Modifier.height(4.dp))
     SettingItem(
-        icon = R.drawable.bookmark_add,
+        icon = R.drawable.quick_share_icon,
         title = "Quick save shared links",
         subtitle = if (state.quickSaveEnabled) "On" else "Off",
         trailing = {

@@ -23,28 +23,6 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Pink80
 )
 
-private val AmoledColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-    background = Color.Black,
-    onBackground = Color.White,
-    surface = Color.Black,
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF1C1B1F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    surfaceContainer = Color(0xFF161616),
-    surfaceContainerHigh = Color(0xFF1E1E1E),
-    surfaceContainerHighest = Color(0xFF262626),
-    surfaceContainerLow = Color(0xFF0E0E0E),
-    surfaceContainerLowest = Color.Black,
-    surfaceBright = Color(0xFF1E1E1E),
-    surfaceDim = Color.Black,
-    inverseSurface = Color(0xFFE6E1E6),
-    inverseOnSurface = Color(0xFF141414),
-    inversePrimary = Purple40
-)
-
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
@@ -75,7 +53,29 @@ fun SavrTheme(
     }
 
     val colorScheme = when {
-        ThemeMode.AMOLED == themeMode -> AmoledColorScheme
+        ThemeMode.AMOLED == themeMode -> {
+            val base = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val context = LocalContext.current
+                dynamicDarkColorScheme(context)
+            } else {
+                DarkColorScheme
+            }
+            base.copy(
+                background = Color.Black,
+                surface = Color.Black,
+                surfaceVariant = Color(0xFF1C1B1F),
+                surfaceContainer = Color(0xFF161616),
+                surfaceContainerHigh = Color(0xFF1E1E1E),
+                surfaceContainerHighest = Color(0xFF262626),
+                surfaceContainerLow = Color(0xFF0E0E0E),
+                surfaceContainerLowest = Color.Black,
+                surfaceBright = Color(0xFF1E1E1E),
+                surfaceDim = Color.Black,
+                inverseSurface = Color(0xFFE6E1E6),
+                inverseOnSurface = Color(0xFF141414)
+            )
+        }
+
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
