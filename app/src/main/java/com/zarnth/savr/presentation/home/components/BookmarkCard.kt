@@ -119,7 +119,8 @@ fun BookmarkCard(
                 ) {
                     Text(
                         text = cleanHost.firstOrNull()?.uppercase() ?: "?",
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             } else {
@@ -142,7 +143,8 @@ fun BookmarkCard(
                 text = cleanHost,
                 style = MaterialTheme.typography.labelLarge,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
