@@ -27,6 +27,16 @@ sealed class BrowserImportState {
     data class Error(val message: String) : BrowserImportState()
 }
 
+sealed class UpdateState {
+    object Idle : UpdateState()
+    object Checking : UpdateState()
+    object UpToDate : UpdateState()
+    data class Available(val latestVersion: String, val notes: String) : UpdateState()
+    object Downloading : UpdateState()
+    data class ReadyToInstall(val apkPath: String) : UpdateState()
+    object DownloadFailed : UpdateState()
+}
+
 data class SettingState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val showThemeSheet: Boolean = false,
@@ -45,5 +55,7 @@ data class SettingState(
     val browserImportState: BrowserImportState = BrowserImportState.Idle,
     val browserExportState: ExportState = ExportState.Idle,
     val showExportSheet: Boolean = false,
-    val showImportSheet: Boolean = false
+    val showImportSheet: Boolean = false,
+    val updateState: UpdateState = UpdateState.Idle,
+    val showUpdateSheet: Boolean = false
 )
