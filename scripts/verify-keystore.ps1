@@ -42,8 +42,21 @@ try {
         -deststorepass "temp123" `
         -destkeypass "temp123" *> $null
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "FAIL: this KEY password is wrong => ANDROID_KEY_PASSWORD in GitHub is wrong."
-        exit 1
+        # PKCS12 keystores protect every entry with the store password, and
+        # keytool rejects an explicitly-passed -srckeypass for them even when it
+        # matches. Retry without -srckeypass, which makes keytool default to the
+        # store password, before reporting a failure.
+        & $Keytool -importkeystore -noprompt `
+            -srckeystore $KeystorePath `
+            -srcstorepass $StorePassword `
+            -destkeystore $TempStore `
+            -deststoretype PKCS12 `
+            -deststorepass "temp123" `
+            -destkeypass "temp123" *> $null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "FAIL: this KEY password is wrong => ANDROID_KEY_PASSWORD in GitHub is wrong."
+            exit 1
+        }
     }
     Write-Host "OK: key password works."
 } finally {
