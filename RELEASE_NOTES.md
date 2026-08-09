@@ -1,8 +1,8 @@
-# Savr v1.3.1
+# Savr v1.3.2
 
 ## What's new
 
-- **In-app update checker** — Savr now checks for a newer version on your GitHub releases and offers to download and install it right from Settings.
+- **Redesigned app update icon** — a cleaner refresh-style icon for the in-app update checker in Settings.
 
 ## What's fixed
 
