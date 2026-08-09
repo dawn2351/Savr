@@ -5,6 +5,19 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
+val releaseVersionCode: Int =
+    (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 5
+
+val releaseVersionName: String =
+    (project.findProperty("versionName") as? String) ?: "1.2"
+
+val hasReleaseSigning = listOf(
+    "SAVR_KEYSTORE_FILE",
+    "SAVR_KEYSTORE_PASSWORD",
+    "SAVR_KEY_ALIAS",
+    "SAVR_KEY_PASSWORD"
+).all { !System.getenv(it).isNullOrBlank() }
+
 android {
     namespace = "com.zarnth.savr"
     compileSdk {
@@ -17,16 +30,32 @@ android {
         applicationId = "com.zarnth.savr"
         minSdk = 28
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.2"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigning) {
+                storeFile = file(System.getenv("SAVR_KEYSTORE_FILE"))
+                storePassword = System.getenv("SAVR_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SAVR_KEY_ALIAS")
+                keyPassword = System.getenv("SAVR_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                null
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
