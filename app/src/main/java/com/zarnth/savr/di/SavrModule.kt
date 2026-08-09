@@ -7,6 +7,7 @@ import com.zarnth.savr.data.local.repository.BookmarkRepositoryImpl
 import com.zarnth.savr.data.local.repository.SettingsRepositoryImpl
 import com.zarnth.savr.domain.repository.BookmarkRepository
 import com.zarnth.savr.domain.repository.SettingsRepository
+import com.zarnth.savr.data.update.UpdateChecker
 import com.zarnth.savr.presentation.collection.CollectionViewModel
 import com.zarnth.savr.presentation.home.HomeViewModel
 import com.zarnth.savr.presentation.search.SearchViewModel
@@ -47,6 +48,10 @@ val savrModule = module {
         BackupManager(get(), get(), get(), get())
     }
 
+    single {
+        UpdateChecker(get())
+    }
+
     viewModel {
         HomeViewModel(get())
     }
@@ -60,6 +65,6 @@ val savrModule = module {
     }
 
     viewModel {
-        SettingViewModel(get(), get())
+        SettingViewModel(get(), get(), get())
     }
 }
