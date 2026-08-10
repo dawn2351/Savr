@@ -34,4 +34,5 @@ sealed class SettingEvents {
     object HideUpdateSheet : SettingEvents()
     object DownloadUpdate : SettingEvents()
     object DismissUpdateResult : SettingEvents()
+    object TestCrash : SettingEvents()
 }

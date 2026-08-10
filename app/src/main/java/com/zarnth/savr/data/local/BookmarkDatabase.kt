@@ -4,16 +4,19 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.zarnth.savr.data.local.dao.BookmarkDao
 import com.zarnth.savr.data.local.dao.CollectionDao
+import com.zarnth.savr.data.local.dao.CrashLogDao
 import com.zarnth.savr.data.local.entity.BookmarkCollectionCrossRef
 import com.zarnth.savr.data.local.entity.BookmarkEntity
 import com.zarnth.savr.data.local.entity.CollectionEntity
+import com.zarnth.savr.data.local.entity.CrashLogEntity
 
 @Database(
-    entities = [BookmarkEntity::class, CollectionEntity::class, BookmarkCollectionCrossRef::class],
-    version = 4
+    entities = [BookmarkEntity::class, CollectionEntity::class, BookmarkCollectionCrossRef::class, CrashLogEntity::class],
+    version = 5
 )
 abstract class BookmarkDatabase : RoomDatabase() {
 
     abstract fun bookmarkDao(): BookmarkDao
     abstract fun collectionDao(): CollectionDao
+    abstract fun crashLogDao(): CrashLogDao
 }

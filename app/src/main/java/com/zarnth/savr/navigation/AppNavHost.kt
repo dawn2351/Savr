@@ -15,7 +15,8 @@ fun AppNavHost(
     homeScreen: @Composable () -> Unit,
     collectionsScreen: @Composable (onNavigateToDetail: (Long) -> Unit) -> Unit,
     collectionDetailScreen: @Composable (collectionId: Long) -> Unit,
-    settingsScreen: @Composable () -> Unit,
+    settingsScreen: @Composable (onNavigateToCrashLogs: () -> Unit) -> Unit,
+    crashLogScreen: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backStacks: List<MutableList<AppRoute>> = remember {
@@ -46,7 +47,10 @@ fun AppNavHost(
                     collectionsScreen { id -> currentBackStack.add(AppRoute.CollectionDetail(id)) }
                 }
                 is AppRoute.CollectionDetail -> NavEntry(route) { collectionDetailScreen(route.collectionId) }
-                is AppRoute.Settings -> NavEntry(route) { settingsScreen() }
+                is AppRoute.Settings -> NavEntry(route) {
+                    settingsScreen { currentBackStack.add(AppRoute.CrashLogs) }
+                }
+                is AppRoute.CrashLogs -> NavEntry(route) { crashLogScreen() }
             }
         }
     )

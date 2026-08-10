@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.FileProvider
 import com.zarnth.savr.openChromeTab
 import com.zarnth.savr.presentation.home.components.LoadingProgress
 import com.zarnth.savr.presentation.setting.components.AboutSection
@@ -35,14 +34,13 @@ import com.zarnth.savr.presentation.setting.components.OptionSheet
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
 import com.zarnth.savr.presentation.setting.components.ThemeSection
 import com.zarnth.savr.presentation.setting.components.UpdateSection
-import com.zarnth.savr.presentation.setting.components.UpdateSheet
 import com.zarnth.savr.ui.theme.ThemeMode
 import org.koin.androidx.compose.koinViewModel
-import java.io.File
 
 @Composable
 fun SettingScreen(
-    viewModel: SettingViewModel = koinViewModel()
+    viewModel: SettingViewModel = koinViewModel(),
+    onOpenCrashLogs: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -111,28 +109,6 @@ fun SettingScreen(
         }
     }
 
-    val readyToInstall = state.updateState as? UpdateState.ReadyToInstall
-    LaunchedEffect(readyToInstall) {
-        if (readyToInstall != null) {
-            val file = File(readyToInstall.apkPath)
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file
-            )
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            runCatching {
-                context.startActivity(installIntent)
-            }.onFailure {
-                viewModel.onEvent(SettingEvents.DismissUpdateResult)
-            }
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -145,7 +121,11 @@ fun SettingScreen(
             CommunitySection(context)
             LegalSection(context)
             UpdateSection(state, viewModel, versionName)
-            AboutSection(versionName)
+            AboutSection(
+                versionName,
+                onOpenCrashLogs = onOpenCrashLogs,
+                onTestCrash = { viewModel.onEvent(SettingEvents.TestCrash) }
+            )
         }
 
         LoadingProgress(
@@ -301,16 +281,6 @@ fun SettingScreen(
         AutoBackupInfoDialog(
             onEnable = { viewModel.onEvent(SettingEvents.ConfirmAutoBackupEnable) },
             onDismiss = { viewModel.onEvent(SettingEvents.DismissAutoBackupInfoDialog) }
-        )
-    }
-
-    val updateAvailable = state.updateState as? UpdateState.Available
-    if (state.showUpdateSheet && updateAvailable != null) {
-        UpdateSheet(
-            latestVersion = updateAvailable.latestVersion,
-            notes = updateAvailable.notes,
-            onDownload = { viewModel.onEvent(SettingEvents.DownloadUpdate) },
-            onDismiss = { viewModel.onEvent(SettingEvents.HideUpdateSheet) }
         )
     }
 }

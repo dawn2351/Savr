@@ -2,13 +2,17 @@ package com.zarnth.savr.di
 
 import androidx.room.Room
 import com.zarnth.savr.data.backup.BackupManager
+import com.zarnth.savr.data.crash.CrashHandler
 import com.zarnth.savr.data.local.BookmarkDatabase
 import com.zarnth.savr.data.local.repository.BookmarkRepositoryImpl
+import com.zarnth.savr.data.local.repository.CrashLogRepositoryImpl
 import com.zarnth.savr.data.local.repository.SettingsRepositoryImpl
 import com.zarnth.savr.domain.repository.BookmarkRepository
+import com.zarnth.savr.domain.repository.CrashLogRepository
 import com.zarnth.savr.domain.repository.SettingsRepository
 import com.zarnth.savr.data.update.UpdateChecker
 import com.zarnth.savr.presentation.collection.CollectionViewModel
+import com.zarnth.savr.presentation.crashlog.CrashLogViewModel
 import com.zarnth.savr.presentation.home.HomeViewModel
 import com.zarnth.savr.presentation.search.SearchViewModel
 import com.zarnth.savr.presentation.setting.SettingViewModel
@@ -44,6 +48,18 @@ val savrModule = module {
         BookmarkRepositoryImpl(get(), get())
     }
 
+    single<CrashLogRepository> {
+        CrashLogRepositoryImpl(get())
+    }
+
+    single {
+        get<BookmarkDatabase>().crashLogDao()
+    }
+
+    single {
+        CrashHandler(get(), get())
+    }
+
     single {
         BackupManager(get(), get(), get(), get())
     }
@@ -66,5 +82,9 @@ val savrModule = module {
 
     viewModel {
         SettingViewModel(get(), get(), get())
+    }
+
+    viewModel {
+        CrashLogViewModel(get())
     }
 }

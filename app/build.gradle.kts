@@ -21,9 +21,7 @@ val hasReleaseSigning = listOf(
 android {
     namespace = "com.zarnth.savr"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
@@ -68,6 +66,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -111,6 +110,8 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose")
 
     implementation("androidx.browser:browser:1.10.0")
+
+    implementation(libs.markdown.renderer)
 
 
 

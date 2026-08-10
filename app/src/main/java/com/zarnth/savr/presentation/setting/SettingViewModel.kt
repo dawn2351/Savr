@@ -2,6 +2,8 @@ package com.zarnth.savr.presentation.setting
 
 import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zarnth.savr.data.backup.BackupManager
@@ -205,6 +207,16 @@ class SettingViewModel(
             SettingEvents.DismissUpdateResult -> {
                 _state.update { it.copy(updateState = UpdateState.Idle, showUpdateSheet = false) }
             }
+
+            SettingEvents.TestCrash -> {
+                triggerTestCrash()
+            }
+        }
+    }
+
+    private fun triggerTestCrash() {
+        Handler(Looper.getMainLooper()).post {
+            throw RuntimeException("Savr test crash triggered from Settings")
         }
     }
 

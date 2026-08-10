@@ -2,8 +2,10 @@ package com.zarnth.savr.presentation.setting.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -15,8 +17,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hrm.markdown.renderer.Markdown
+import com.hrm.markdown.renderer.MarkdownTheme
 import com.zarnth.savr.R
 import com.zarnth.savr.presentation.setting.SettingEvents
 import com.zarnth.savr.presentation.setting.SettingState
@@ -127,12 +130,17 @@ fun UpdateSheet(
             )
             if (notes.isNotBlank()) {
                 Spacer(Modifier.height(12.dp))
-                Text(
-                    text = notes,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Start
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    Markdown(
+                        markdown = notes,
+                        theme = MarkdownTheme.auto(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
             Spacer(Modifier.height(20.dp))
             Button(
