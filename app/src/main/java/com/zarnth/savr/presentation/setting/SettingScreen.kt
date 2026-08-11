@@ -33,7 +33,6 @@ import com.zarnth.savr.presentation.setting.components.LegalSection
 import com.zarnth.savr.presentation.setting.components.OptionSheet
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
 import com.zarnth.savr.presentation.setting.components.ThemeSection
-import com.zarnth.savr.presentation.setting.components.UpdateSection
 import com.zarnth.savr.ui.theme.ThemeMode
 import org.koin.androidx.compose.koinViewModel
 
@@ -120,7 +119,6 @@ fun SettingScreen(
             DataSection(state, viewModel)
             CommunitySection(context)
             LegalSection(context)
-            UpdateSection(state, viewModel, versionName)
             AboutSection(
                 versionName,
                 onOpenCrashLogs = onOpenCrashLogs,

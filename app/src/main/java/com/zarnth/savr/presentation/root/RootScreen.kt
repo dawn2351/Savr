@@ -2,8 +2,6 @@ package com.zarnth.savr.presentation.root
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,7 +26,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -57,15 +54,11 @@ import com.zarnth.savr.presentation.setting.BrowserImportState
 import com.zarnth.savr.presentation.setting.ImportState
 import com.zarnth.savr.presentation.setting.SettingScreen
 import com.zarnth.savr.presentation.setting.SettingViewModel
-import com.zarnth.savr.presentation.setting.SettingEvents
-import com.zarnth.savr.presentation.setting.UpdateState
 import com.zarnth.savr.presentation.setting.components.RadioOptionSheet
-import com.zarnth.savr.presentation.setting.components.UpdateSheet
 import com.zarnth.savr.ui.theme.SavrTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,32 +135,6 @@ fun RootScreen(
 
     LaunchedEffect(isCollectionSearching) {
         if (isCollectionSearching) focusRequester.requestFocus()
-    }
-
-    LaunchedEffect(Unit) {
-        settingViewModel.onEvent(SettingEvents.CheckForUpdate)
-    }
-
-    val readyToInstall = settingState.updateState as? UpdateState.ReadyToInstall
-    LaunchedEffect(readyToInstall) {
-        if (readyToInstall != null) {
-            val file = File(readyToInstall.apkPath)
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file
-            )
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            runCatching {
-                context.startActivity(installIntent)
-            }.onFailure {
-                settingViewModel.onEvent(SettingEvents.DismissUpdateResult)
-            }
-        }
     }
 
     val showTopBarActions =
@@ -429,16 +396,6 @@ fun RootScreen(
                 },
                 url = editingBookmark?.url.orEmpty(),
                 imageUrl = editingBookmark?.imageUrl
-            )
-        }
-
-        val updateAvailable = settingState.updateState as? UpdateState.Available
-        if (settingState.showUpdateSheet && updateAvailable != null) {
-            UpdateSheet(
-                latestVersion = updateAvailable.latestVersion,
-                notes = updateAvailable.notes,
-                onDownload = { settingViewModel.onEvent(SettingEvents.DownloadUpdate) },
-                onDismiss = { settingViewModel.onEvent(SettingEvents.HideUpdateSheet) }
             )
         }
     }

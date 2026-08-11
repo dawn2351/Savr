@@ -1,22 +1,24 @@
-# Savr v1.3.3
+# Savr v1.3.4
 
 ## What's new
 
-### Crashes & stability
+### A small change to Savr's update system
 
-- **Crash logs** — if the app ever stops unexpectedly, the full details are saved privately on your device. Open **Settings → About → Crash logs** to review the crash report — app version, Android version, device model, thread, and the complete stack trace — and copy it to share with the developer.
-- **100% private** — crash reports never leave your device. Savr still has no analytics.
+- **Removed the GitHub-based in-app update feature.**
 
-### Updates
+The main reason is that the APK self-update mechanism requires the `REQUEST_INSTALL_PACKAGES` permission, which is subject to Google Play's restricted permission policies and isn't appropriate for Savr's Play Store distribution.
 
-- **Automatic update check** — Savr now checks for a newer version every time it opens and shows the update sheet automatically when one is available. No need to open Settings; if you're up to date, nothing pops up.
-- **Readable changelogs** — release notes are now rendered as formatted Markdown in the update sheet.
-- **Update sheet polish** — the notes area scrolls independently so the **Download & install** and **Not now** buttons are always visible, even with long changelogs.
+Rather than maintaining separate builds and adding unnecessary complexity just to support the GitHub updater, I've decided to keep Savr's codebase simple and reliable.
+
+For GitHub users, updates will now need to be downloaded manually from the latest GitHub Release.
+
+The Google Play version will continue to receive updates normally through Google Play.
+
+Sorry for the inconvenience, and thank you for understanding. I'd rather remove a feature than keep something around that could create Play Store compliance issues or make Savr harder to maintain.
 
 ## What's fixed
 
-- Update sheet buttons could be pushed off-screen when the changelog was very long; the changelog now scrolls in its own area while the buttons stay pinned.
-- Launched a safer foundation: Kotlin 2.3.10, KSP 2.3.10, and compileSdk 37.
+- Removed the automatic update check on app startup, the update sheet/UI, and the APK download & install logic.
 
 ## Files
 

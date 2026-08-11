@@ -29,10 +29,5 @@ sealed class SettingEvents {
     object HideExportSheet : SettingEvents()
     object ShowImportSheet : SettingEvents()
     object HideImportSheet : SettingEvents()
-    object CheckForUpdate : SettingEvents()
-    object ShowUpdateSheet : SettingEvents()
-    object HideUpdateSheet : SettingEvents()
-    object DownloadUpdate : SettingEvents()
-    object DismissUpdateResult : SettingEvents()
     object TestCrash : SettingEvents()
 }

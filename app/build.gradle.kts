@@ -108,12 +108,6 @@ dependencies {
     implementation(platform("io.insert-koin:koin-bom:4.2.1"))
     implementation("io.insert-koin:koin-android")
     implementation("io.insert-koin:koin-androidx-compose")
-
     implementation("androidx.browser:browser:1.10.0")
-
-    implementation(libs.markdown.renderer)
-
-
-
 
 }

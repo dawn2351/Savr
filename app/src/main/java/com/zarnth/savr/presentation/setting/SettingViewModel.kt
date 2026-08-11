@@ -7,22 +7,18 @@ import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zarnth.savr.data.backup.BackupManager
-import com.zarnth.savr.data.update.UpdateChecker
-import com.zarnth.savr.data.update.compareVersions
 import com.zarnth.savr.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class SettingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val backupManager: BackupManager,
-    private val updateChecker: UpdateChecker
+    private val backupManager: BackupManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -37,8 +33,6 @@ class SettingViewModel(
         )
     )
     val state = _state.asStateFlow()
-
-    private var latestUpdateUrl: String? = null
 
     init {
         if (settingsRepository.getAutoBackupEnabled()) {
@@ -188,26 +182,6 @@ class SettingViewModel(
                 _state.update { it.copy(showImportSheet = false) }
             }
 
-            SettingEvents.CheckForUpdate -> {
-                checkForUpdate()
-            }
-
-            SettingEvents.ShowUpdateSheet -> {
-                _state.update { it.copy(showUpdateSheet = true) }
-            }
-
-            SettingEvents.HideUpdateSheet -> {
-                _state.update { it.copy(showUpdateSheet = false) }
-            }
-
-            SettingEvents.DownloadUpdate -> {
-                downloadUpdate()
-            }
-
-            SettingEvents.DismissUpdateResult -> {
-                _state.update { it.copy(updateState = UpdateState.Idle, showUpdateSheet = false) }
-            }
-
             SettingEvents.TestCrash -> {
                 triggerTestCrash()
             }
@@ -265,51 +239,6 @@ class SettingViewModel(
                 _state.update { it.copy(browserImportState = BrowserImportState.Success(result.imported, result.skipped, result.collections)) }
             } catch (e: Exception) {
                 _state.update { it.copy(browserImportState = BrowserImportState.Error(e.message ?: "Import failed")) }
-            }
-        }
-    }
-
-    private fun checkForUpdate() {
-        if (updateChecker.isPlayStoreInstall()) {
-            _state.update { it.copy(updateState = UpdateState.UpToDate) }
-            return
-        }
-        viewModelScope.launch {
-            _state.update { it.copy(updateState = UpdateState.Checking) }
-            val info = updateChecker.checkForUpdate()
-            val currentVersion = updateChecker.currentVersionName()
-            if (info == null || compareVersions(info.versionName, currentVersion) <= 0) {
-                _state.update { it.copy(updateState = UpdateState.UpToDate) }
-            } else {
-                latestUpdateUrl = info.apkUrl
-                _state.update {
-                    it.copy(
-                        updateState = UpdateState.Available(info.versionName, info.notes),
-                        showUpdateSheet = true
-                    )
-                }
-            }
-        }
-    }
-
-    private fun downloadUpdate() {
-        viewModelScope.launch {
-            val downloadUrl = latestUpdateUrl
-            if (downloadUrl == null) {
-                _state.update { it.copy(updateState = UpdateState.DownloadFailed, showUpdateSheet = false) }
-                return@launch
-            }
-            _state.update { it.copy(updateState = UpdateState.Downloading) }
-            val file = File(updateChecker.cacheDir(), "savr-update.apk")
-            if (updateChecker.downloadApk(downloadUrl, file)) {
-                _state.update {
-                    it.copy(
-                        updateState = UpdateState.ReadyToInstall(file.absolutePath),
-                        showUpdateSheet = false
-                    )
-                }
-            } else {
-                _state.update { it.copy(updateState = UpdateState.DownloadFailed, showUpdateSheet = false) }
             }
         }
     }
