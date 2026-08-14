@@ -1,0 +1,2 @@
+Removed the GitHub-based in-app update feature.
+Updates for GitHub users are now available manually from the latest GitHub Release; the Google Play version continues to update through Google Play.
