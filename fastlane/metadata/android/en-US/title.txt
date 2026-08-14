@@ -1,1 +1,1 @@
-Savr
+Savr - Bookmark Manager
