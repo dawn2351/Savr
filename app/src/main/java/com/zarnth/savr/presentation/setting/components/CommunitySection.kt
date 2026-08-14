@@ -14,6 +14,20 @@ fun CommunitySection(context: Context) {
     Spacer(Modifier.height(12.dp))
     SectionHeader("Community")
     SettingItem(
+        icon = R.drawable.donation_icon,
+        title = "Donate on Patreon",
+        subtitle = "Support the creator & future updates",
+        onClick = { openChromeTab("https://www.patreon.com/c/zarnth", context) }
+    )
+    Spacer(Modifier.height(4.dp))
+    SettingItem(
+        icon = R.drawable.telegram_icon,
+        title = "Telegram channel",
+        subtitle = "Get app updates & announcements",
+        onClick = { openChromeTab("https://t.me/savr_app", context) }
+    )
+    Spacer(Modifier.height(4.dp))
+    SettingItem(
         icon = R.drawable.github_icon,
         title = "Star on GitHub",
         onClick = { openChromeTab("https://github.com/qeiq/Savr", context) }

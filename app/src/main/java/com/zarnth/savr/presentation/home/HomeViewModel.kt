@@ -213,6 +213,10 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
             HomeEvents.AddClipboardBookmark -> {
                 addClipboardBookmark()
             }
+
+            HomeEvents.DuplicateToastShown -> {
+                _state.update { it.copy(duplicateToastKey = 0) }
+            }
         }
     }
 

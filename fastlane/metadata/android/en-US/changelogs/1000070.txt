@@ -1,1 +1,0 @@
-Added listing metadata for izzyOnDroid and F-Droid: app title, descriptions, icon, and phone screenshots. Improved README with support links.

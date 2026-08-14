@@ -1,9 +1,12 @@
-# Savr v1.3.5
+# Savr v1.3.6
 
 ## What's new
 
-- Added full listing metadata for **izzyOnDroid and F-Droid**: app title, short and full descriptions, icon, and phone screenshots, plus a validation workflow that keeps the metadata correct.
-- Improved the README with support links and a Patreon funding page.
+- **Splash screen follows your theme.** The launch screen now matches light/dark mode. The logo also animates in on Android 12 and above.
+- **Launcher icon fixed in dark mode.** The icon background no longer renders white on dark wallpapers.
+- **Fixed repeating duplicate-URL toast.** "URL already exists" now shows exactly once, only when you actually try to save a duplicate.
+- **Stay in the loop.** Find us on Telegram for release updates: https://t.me/savr_app
+- **Support the development.** If Savr helps you, a small Patreon contribution goes a long way to keep the project maintained and funded: https://www.patreon.com/c/zarnth
 
 ## Files
 

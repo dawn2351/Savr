@@ -1,1 +1,0 @@
-A no-nonsense bookmark app for Android. Paste a link. That's it.

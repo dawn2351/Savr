@@ -34,4 +34,5 @@ sealed class HomeEvents {
     data class ClipboardDetected(val text: String?) : HomeEvents()
     object DismissClipboardSheet : HomeEvents()
     object AddClipboardBookmark : HomeEvents()
+    object DuplicateToastShown : HomeEvents()
 }

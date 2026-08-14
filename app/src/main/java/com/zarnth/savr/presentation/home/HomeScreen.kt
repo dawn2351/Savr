@@ -80,6 +80,7 @@ fun HomeScreen(
     LaunchedEffect(state.duplicateToastKey) {
         if (state.duplicateToastKey > 0) {
             Toast.makeText(context, "URL already exists", Toast.LENGTH_SHORT).show()
+            viewModel.homeEvents(HomeEvents.DuplicateToastShown)
         }
     }
 
