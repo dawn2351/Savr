@@ -35,6 +35,7 @@ import com.zarnth.savr.presentation.collection.CollectionDetailScreen
 import com.zarnth.savr.presentation.collection.CollectionEvents
 import com.zarnth.savr.presentation.collection.CollectionScreen
 import com.zarnth.savr.presentation.collection.CollectionViewModel
+import com.zarnth.savr.presentation.collection.components.AddLinkToCollectionSheet
 import com.zarnth.savr.presentation.collection.components.CollectionPickerSheet
 import com.zarnth.savr.presentation.crashlog.CrashLogScreen
 import com.zarnth.savr.presentation.crashlog.CrashLogViewModel
@@ -267,7 +268,8 @@ fun RootScreen(
                     collectionState = collectionState,
                     isSearching = isSearching,
                     onHomeFabClick = { viewModel.homeEvents(HomeEvents.FabClick) },
-                    onCollectionFabClick = { collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) }
+                    onCollectionFabClick = { collectionViewModel.onEvent(CollectionEvents.ShowCreateDialog) },
+                    onCollectionAddBookmarkClick = { collectionViewModel.onEvent(CollectionEvents.ShowAddBookmarkSheet) }
                 )
             }
         ) { innerPadding ->
@@ -319,9 +321,7 @@ fun RootScreen(
             }
         }
 
-        val isImporting = settingState.browserImportState is BrowserImportState.Loading || settingState.importState is ImportState.Loading
-
-        LoadingProgress(isLoading = isImporting, blockTouch = true)
+        val isImporting = settingState.browserImportState is BrowserImportState.Loading || settingState.importState is ImportState.Loading || collectionState.isAddBookmarkLoading
 
         if (state.showCollectionPicker) {
             CollectionPickerSheet(
@@ -361,12 +361,44 @@ fun RootScreen(
             )
         }
 
+        if (collectionState.showAddBookmarkSheet) {
+            AddLinkToCollectionSheet(
+                showBottomSheet = true,
+                collectionName = collectionState.selectedCollection?.name.orEmpty(),
+                value = collectionState.inputUrl,
+                onTextChange = { collectionViewModel.onEvent(CollectionEvents.AddBookmarkUrlChanged(it)) },
+                onSaveClick = { collectionViewModel.onEvent(CollectionEvents.AddBookmarkToCollection) },
+                onDismissRequest = { collectionViewModel.onEvent(CollectionEvents.HideAddBookmarkSheet) },
+                isLoading = collectionState.isAddBookmarkLoading
+            )
+        }
+
         state.clipboardSuggestion?.let { suggestion ->
+            val isInCollectionDetail = currentTab == 1 && collectionState.selectedCollection != null
             ClipboardAddSheet(
                 suggestion = suggestion,
                 isLoading = state.isClipboardLoading,
+                buttonText = if (isInCollectionDetail) {
+                    "Add to \"${collectionState.selectedCollection?.name.orEmpty()}\""
+                } else {
+                    "Add Bookmark"
+                },
                 onDismissRequest = { viewModel.homeEvents(HomeEvents.DismissClipboardSheet) },
-                onAddClick = { viewModel.homeEvents(HomeEvents.AddClipboardBookmark) }
+                onAddClick = {
+                    if (isInCollectionDetail) {
+                        viewModel.homeEvents(HomeEvents.DismissClipboardSheet)
+                        collectionViewModel.onEvent(
+                            CollectionEvents.AddClipboardToCollection(
+                                url = suggestion.url,
+                                title = suggestion.title,
+                                description = suggestion.description,
+                                imageUrl = suggestion.imageUrl
+                            )
+                        )
+                    } else {
+                        viewModel.homeEvents(HomeEvents.AddClipboardBookmark)
+                    }
+                }
             )
         }
 
@@ -398,6 +430,8 @@ fun RootScreen(
                 imageUrl = editingBookmark?.imageUrl
             )
         }
+
+        LoadingProgress(isLoading = isImporting, blockTouch = true)
     }
 }
 

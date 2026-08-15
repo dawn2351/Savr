@@ -71,4 +71,13 @@ interface CollectionDao {
         WHERE bcc.collectionId = :collectionId
     """)
     suspend fun getBookmarkUrlsForCollection(collectionId: Long): List<String>
+
+    @Query("""
+        SELECT EXISTS(
+            SELECT 1 FROM bookmark_collection_cross_ref bcc
+            INNER JOIN bookmarks b ON b.id = bcc.bookmarkId
+            WHERE bcc.collectionId = :collectionId AND b.url = :url
+        )
+    """)
+    suspend fun isUrlInCollection(url: String, collectionId: Long): Boolean
 }

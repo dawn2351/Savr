@@ -7,7 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     suspend fun insert(bookmark: Bookmark): Boolean
+    suspend fun insertToHome(bookmark: Bookmark): Boolean
     suspend fun existsByUrl(url: String): Boolean
+    suspend fun existsOnHomeByUrl(url: String): Boolean
+    suspend fun getBookmarkIdByUrl(url: String): Long?
     fun getBookmarks(): Flow<Resource<List<Bookmark>>>
     suspend fun getBookmarksWithoutImage(): List<Bookmark>
     suspend fun getBookmarksMissingMetadata(): List<Bookmark>
@@ -21,6 +24,7 @@ interface BookmarkRepository {
     suspend fun addBookmarkToCollection(bookmarkId: Long, collectionId: Long)
     suspend fun addBookmarksToCollection(bookmarkIds: List<Long>, collectionId: Long)
     suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long)
+    suspend fun isUrlInCollection(url: String, collectionId: Long): Boolean
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
     suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?)
     suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?)

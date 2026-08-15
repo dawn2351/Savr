@@ -1,5 +1,6 @@
 package com.zarnth.savr.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -13,5 +14,7 @@ data class BookmarkEntity(
     val description: String?,
     val imageUrl: String?,
     val createdAt: Long = System.currentTimeMillis(),
-    val isHidden: Boolean = false
+    val isHidden: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val isCollectionOnly: Boolean = false
 )

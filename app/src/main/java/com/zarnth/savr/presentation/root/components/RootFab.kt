@@ -21,7 +21,8 @@ fun RootFab(
     collectionState: CollectionState,
     isSearching: Boolean = false,
     onHomeFabClick: () -> Unit,
-    onCollectionFabClick: () -> Unit
+    onCollectionFabClick: () -> Unit,
+    onCollectionAddBookmarkClick: () -> Unit
 ) {
     if (isSearching || homeState.isSelectionMode || collectionState.isSelectionMode ||
         collectionState.isDetailSelectionMode
@@ -38,6 +39,14 @@ fun RootFab(
 
         1 -> if (collectionState.selectedCollection == null) {
             FloatingActionButton(onClick = onCollectionFabClick) {
+                Icon(
+                    painterResource(R.drawable.add_icons),
+                    contentDescription = null,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+        } else {
+            FloatingActionButton(onClick = onCollectionAddBookmarkClick) {
                 Icon(
                     painterResource(R.drawable.add_icons),
                     contentDescription = null,

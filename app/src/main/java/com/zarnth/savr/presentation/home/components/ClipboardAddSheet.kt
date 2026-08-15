@@ -47,7 +47,8 @@ fun ClipboardAddSheet(
     suggestion: ClipboardSuggestion,
     isLoading: Boolean,
     onDismissRequest: () -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    buttonText: String = "Add Bookmark"
 ) {
     val host = suggestion.url.toUri().host.orEmpty()
     val cleanHost = if (host.startsWith("www.")) host.removePrefix("www.") else host
@@ -220,7 +221,7 @@ fun ClipboardAddSheet(
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add Bookmark")
+                Text(buttonText)
             }
 
             Spacer(modifier = Modifier.height(8.dp))

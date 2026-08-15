@@ -10,6 +10,7 @@ sealed class CollectionEvents {
     object HideCreateDialog : CollectionEvents()
     object CreateCollection : CollectionEvents()
     data class SelectCollection(val collection: Collection) : CollectionEvents()
+    data class RestoreCollectionDetail(val collectionId: Long) : CollectionEvents()
     data class ToggleSelection(val id: Long) : CollectionEvents()
     object SelectAll : CollectionEvents()
     object DeselectAll : CollectionEvents()
@@ -31,4 +32,15 @@ sealed class CollectionEvents {
     data class SetSortOrder(val sortOrder: SortOrder) : CollectionEvents()
     object ShowSortSheet : CollectionEvents()
     object HideSortSheet : CollectionEvents()
+    object ShowAddBookmarkSheet : CollectionEvents()
+    object HideAddBookmarkSheet : CollectionEvents()
+    data class AddBookmarkUrlChanged(val url: String) : CollectionEvents()
+    object AddBookmarkToCollection : CollectionEvents()
+    object CollectionDuplicateToastShown : CollectionEvents()
+    data class AddClipboardToCollection(
+        val url: String,
+        val title: String?,
+        val description: String?,
+        val imageUrl: String?
+    ) : CollectionEvents()
 }

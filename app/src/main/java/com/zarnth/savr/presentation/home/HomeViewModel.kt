@@ -265,16 +265,36 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
         }
         viewModelScope.launch {
             try {
+                if (repository.existsOnHomeByUrl(url)) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            duplicateToastKey = it.duplicateToastKey + 1
+                        )
+                    }
+                    return@launch
+                }
                 _state.update { it.copy(isLoading = true) }
                 val meta = parser.parse(url)
+                val bookmarkUrl = meta?.url ?: url
+
+                if (repository.existsOnHomeByUrl(bookmarkUrl)) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            duplicateToastKey = it.duplicateToastKey + 1
+                        )
+                    }
+                    return@launch
+                }
 
                 val bookmark = Bookmark(
-                    url = meta?.url ?: url,
+                    url = bookmarkUrl,
                     title = meta?.title,
                     description = meta?.description,
                     imageUrl = meta?.imageUrl
                 )
-                val inserted = repository.insert(bookmark)
+                val inserted = repository.insertToHome(bookmark)
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -285,7 +305,10 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
 
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(error = e.message ?: "Unknown error")
+                    it.copy(
+                        error = e.message ?: "Unknown error",
+                        isLoading = false
+                    )
                 }
             }
         }
@@ -323,7 +346,7 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
         lastClipboardText = text
         val url = extractUrlFromText(text) ?: return
         viewModelScope.launch {
-            if (repository.existsByUrl(url)) return@launch
+            if (repository.existsOnHomeByUrl(url)) return@launch
             _state.update {
                 it.copy(
                     clipboardSuggestion = ClipboardSuggestion(url = url),
@@ -353,7 +376,7 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
         val suggestion = _state.value.clipboardSuggestion ?: return
         viewModelScope.launch {
             try {
-                val inserted = repository.insert(
+                val inserted = repository.insertToHome(
                     Bookmark(
                         url = suggestion.url,
                         title = suggestion.title,

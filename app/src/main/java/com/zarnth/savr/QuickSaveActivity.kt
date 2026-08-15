@@ -48,7 +48,7 @@ class QuickSaveActivity : Activity() {
         val repository = GlobalContext.get().get<BookmarkRepository>()
         CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
             val inserted = withContext(Dispatchers.IO) {
-                repository.insert(Bookmark(url = url, title = null, description = null, imageUrl = null))
+                repository.insertToHome(Bookmark(url = url, title = null, description = null, imageUrl = null))
             }
             Toast.makeText(
                 this@QuickSaveActivity,

@@ -24,5 +24,9 @@ data class CollectionState(
     val editTitle: String = "",
     val editDescription: String = "",
     val sortOrder: SortOrder = SortOrder.DATE_NEWEST,
-    val showSortSheet: Boolean = false
+    val showSortSheet: Boolean = false,
+    val showAddBookmarkSheet: Boolean = false,
+    val inputUrl: String = "",
+    val isAddBookmarkLoading: Boolean = false,
+    val duplicateToastKey: Int = 0
 )

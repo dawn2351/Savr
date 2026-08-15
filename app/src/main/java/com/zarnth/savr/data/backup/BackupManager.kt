@@ -69,7 +69,7 @@ class BackupManager(
         stopAutoBackup()
         autoBackupJob = scope.launch {
             combine(
-                bookmarkDao.getBookmarks(),
+                bookmarkDao.getAllBookmarks(),
                 collectionDao.getAllCollections()
             ) { bookmarks, collections ->
                 val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
@@ -81,8 +81,10 @@ class BackupManager(
             }
                 .debounce(500)
                 .collect { data ->
-                    val jsonString = json.encodeToString(data)
-                    writeToBothLocations(jsonString)
+                    if (data.bookmarks.isNotEmpty() || data.collections.isNotEmpty()) {
+                        val jsonString = json.encodeToString(data)
+                        writeToBothLocations(jsonString)
+                    }
                 }
         }
     }

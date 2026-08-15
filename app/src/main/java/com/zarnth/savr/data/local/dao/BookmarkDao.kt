@@ -19,10 +19,25 @@ interface BookmarkDao {
     @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE url = :url AND isHidden = 0)")
     suspend fun existsByUrl(url: String): Boolean
 
-    @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
+    @Query("SELECT * FROM bookmarks WHERE url = :url AND isHidden = 0 LIMIT 1")
+    suspend fun getBookmarkByUrl(url: String): BookmarkEntity?
+
+    @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE url = :url AND isHidden = 0 AND isCollectionOnly = 0)")
+    suspend fun existsOnHomeByUrl(url: String): Boolean
+
+    @Query("SELECT * FROM bookmarks WHERE url = :url AND isHidden = 0 AND isCollectionOnly = 1 LIMIT 1")
+    suspend fun findCollectionOnlyByUrl(url: String): BookmarkEntity?
+
+    @Query("UPDATE bookmarks SET isHidden = 0, isCollectionOnly = 0, title = :title, description = :description, imageUrl = :imageUrl, createdAt = :createdAt WHERE id = :id")
+    suspend fun convertCollectionOnlyToHome(id: Long, title: String?, description: String?, imageUrl: String?, createdAt: Long)
+
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND isCollectionOnly = 0")
     fun getBookmarks(): Flow<List<BookmarkEntity>>
 
-    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND (title LIKE '%' || :searchQuery || '%' OR url LIKE '%' || :searchQuery || '%')")
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
+    fun getAllBookmarks(): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmarks WHERE isHidden = 0 AND isCollectionOnly = 0 AND (title LIKE '%' || :searchQuery || '%' OR url LIKE '%' || :searchQuery || '%')")
     fun searchBookmarks(searchQuery: String): Flow<List<BookmarkEntity>>
 
     @Query("UPDATE bookmarks SET isHidden = 1 WHERE id IN (:ids)")

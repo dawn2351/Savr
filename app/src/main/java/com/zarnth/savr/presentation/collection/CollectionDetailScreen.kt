@@ -1,6 +1,7 @@
 package com.zarnth.savr.presentation.collection
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -75,8 +76,21 @@ fun CollectionDetailScreen(
         }
     }
 
+    LaunchedEffect(state.duplicateToastKey) {
+        if (state.duplicateToastKey > 0) {
+            Toast.makeText(context, "Already in this collection", Toast.LENGTH_SHORT).show()
+            viewModel.onEvent(CollectionEvents.CollectionDuplicateToastShown)
+        }
+    }
+
     BackHandler(enabled = state.isDetailSelectionMode) {
         viewModel.onEvent(CollectionEvents.ClearDetailSelection)
+    }
+
+    LaunchedEffect(collectionId) {
+        if (state.selectedCollection?.id != collectionId) {
+            viewModel.onEvent(CollectionEvents.RestoreCollectionDetail(collectionId))
+        }
     }
 
     DisposableEffect(Unit) {

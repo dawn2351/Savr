@@ -25,8 +25,33 @@ class BookmarkRepositoryImpl(
         return dao.insertOrUnhide(bookmark.toEntity())
     }
 
+    override suspend fun insertToHome(bookmark: Bookmark): Boolean {
+        val entity = bookmark.toEntity()
+        if (dao.existsOnHomeByUrl(bookmark.url)) return false
+        val hidden = dao.findHiddenByUrl(bookmark.url)
+        if (hidden != null) {
+            dao.unhideBookmark(hidden.id, entity.title, entity.description, entity.imageUrl, entity.createdAt)
+            return true
+        }
+        val collectionOnly = dao.findCollectionOnlyByUrl(bookmark.url)
+        if (collectionOnly != null) {
+            dao.convertCollectionOnlyToHome(collectionOnly.id, entity.title, entity.description, entity.imageUrl, entity.createdAt)
+            return true
+        }
+        dao.insert(entity)
+        return true
+    }
+
     override suspend fun existsByUrl(url: String): Boolean {
         return dao.existsByUrl(url)
+    }
+
+    override suspend fun existsOnHomeByUrl(url: String): Boolean {
+        return dao.existsOnHomeByUrl(url)
+    }
+
+    override suspend fun getBookmarkIdByUrl(url: String): Long? {
+        return dao.getBookmarkByUrl(url)?.id
     }
 
     override suspend fun getBookmarksWithoutImage(): List<Bookmark> {
@@ -103,6 +128,10 @@ class BookmarkRepositoryImpl(
 
     override suspend fun removeBookmarkFromCollection(bookmarkId: Long, collectionId: Long) {
         collectionDao.removeBookmarkFromCollection(BookmarkCollectionCrossRef(bookmarkId, collectionId))
+    }
+
+    override suspend fun isUrlInCollection(url: String, collectionId: Long): Boolean {
+        return collectionDao.isUrlInCollection(url, collectionId)
     }
 
     override suspend fun updateImageUrl(id: Long, imageUrl: String?) {

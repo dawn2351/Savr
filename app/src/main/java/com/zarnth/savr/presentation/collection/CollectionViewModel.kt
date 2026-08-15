@@ -6,6 +6,7 @@ import com.zarnth.savr.domain.model.Bookmark
 import com.zarnth.savr.domain.model.Collection
 import com.zarnth.savr.domain.repository.BookmarkRepository
 import com.zarnth.savr.domain.model.SortOrder
+import com.zarnth.savr.link_fetcher.LinkMetadataParser
 import com.zarnth.savr.utils.Resource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ class CollectionViewModel(
     val state = _state.asStateFlow()
     private var collectionJob: Job? = null
     private var rawCollectionBookmarks: List<Bookmark> = emptyList()
+    private val parser = LinkMetadataParser()
 
     init {
         loadCollections()
@@ -45,6 +47,10 @@ class CollectionViewModel(
 
             is CollectionEvents.SelectCollection -> {
                 selectCollection(event.collection)
+            }
+
+            is CollectionEvents.RestoreCollectionDetail -> {
+                restoreCollectionDetail(event.collectionId)
             }
 
             is CollectionEvents.ToggleSelection -> {
@@ -185,12 +191,44 @@ class CollectionViewModel(
             CollectionEvents.HideSortSheet -> {
                 _state.update { it.copy(showSortSheet = false) }
             }
+
+            CollectionEvents.ShowAddBookmarkSheet -> {
+                _state.update { it.copy(showAddBookmarkSheet = true, inputUrl = "") }
+            }
+
+            CollectionEvents.HideAddBookmarkSheet -> {
+                _state.update { it.copy(showAddBookmarkSheet = false, inputUrl = "") }
+            }
+
+            is CollectionEvents.AddBookmarkUrlChanged -> {
+                _state.update { it.copy(inputUrl = event.url) }
+            }
+
+            CollectionEvents.AddBookmarkToCollection -> {
+                addBookmarkToCollection()
+            }
+
+            CollectionEvents.CollectionDuplicateToastShown -> {
+                _state.update { it.copy(duplicateToastKey = 0) }
+            }
+
+            is CollectionEvents.AddClipboardToCollection -> {
+                addClipboardToCollection(event.url, event.title, event.description, event.imageUrl)
+            }
         }
     }
 
     fun backToCollections() {
         collectionJob?.cancel()
         _state.update { it.copy(selectedCollection = null, collectionBookmarks = emptyList()) }
+    }
+
+    private fun restoreCollectionDetail(collectionId: Long) {
+        if (_state.value.selectedCollection?.id == collectionId) return
+        val found = _state.value.collections.find { it.id == collectionId }
+        if (found != null) {
+            selectCollection(found)
+        }
     }
 
     private fun selectCollection(collection: Collection) {
@@ -257,6 +295,106 @@ class CollectionViewModel(
         viewModelScope.launch {
             ids.forEach { repository.removeBookmarkFromCollection(it, collectionId) }
             _state.update { it.copy(detailSelectedIds = emptySet(), isDetailSelectionMode = false) }
+        }
+    }
+
+    private fun addBookmarkToCollection() {
+        val collection = _state.value.selectedCollection ?: return
+        val rawUrl = _state.value.inputUrl.trim()
+        if (rawUrl.isEmpty()) return
+        val url = if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
+            "https://$rawUrl"
+        } else {
+            rawUrl
+        }
+        viewModelScope.launch {
+            try {
+                if (repository.isUrlInCollection(url, collection.id)) {
+                    _state.update {
+                        it.copy(
+                            showAddBookmarkSheet = false,
+                            inputUrl = "",
+                            duplicateToastKey = it.duplicateToastKey + 1
+                        )
+                    }
+                    return@launch
+                }
+                _state.update { it.copy(isAddBookmarkLoading = true) }
+                val meta = parser.parse(url)
+                val bookmarkUrl = meta?.url ?: url
+                if (repository.isUrlInCollection(bookmarkUrl, collection.id)) {
+                    _state.update {
+                        it.copy(
+                            isAddBookmarkLoading = false,
+                            showAddBookmarkSheet = false,
+                            inputUrl = "",
+                            duplicateToastKey = it.duplicateToastKey + 1
+                        )
+                    }
+                    return@launch
+                }
+                val bookmark = Bookmark(
+                    url = bookmarkUrl,
+                    title = meta?.title,
+                    description = meta?.description,
+                    imageUrl = meta?.imageUrl,
+                    isCollectionOnly = true
+                )
+                repository.insert(bookmark)
+                val bookmarkId = repository.getBookmarkIdByUrl(bookmarkUrl)
+                if (bookmarkId != null) {
+                    repository.addBookmarkToCollection(bookmarkId, collection.id)
+                }
+                _state.update {
+                    it.copy(
+                        isAddBookmarkLoading = false,
+                        showAddBookmarkSheet = false,
+                        inputUrl = ""
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = e.message ?: "Unknown error",
+                        isAddBookmarkLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun addClipboardToCollection(url: String, title: String?, description: String?, imageUrl: String?) {
+        val collection = _state.value.selectedCollection ?: return
+        if (url.isBlank()) return
+        viewModelScope.launch {
+            try {
+                if (repository.isUrlInCollection(url, collection.id)) {
+                    _state.update { it.copy(duplicateToastKey = it.duplicateToastKey + 1) }
+                    return@launch
+                }
+                _state.update { it.copy(isAddBookmarkLoading = true) }
+                repository.insert(
+                    Bookmark(
+                        url = url,
+                        title = title,
+                        description = description,
+                        imageUrl = imageUrl,
+                        isCollectionOnly = true
+                    )
+                )
+                val bookmarkId = repository.getBookmarkIdByUrl(url)
+                if (bookmarkId != null) {
+                    repository.addBookmarkToCollection(bookmarkId, collection.id)
+                }
+                _state.update { it.copy(isAddBookmarkLoading = false) }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        error = e.message ?: "Unknown error",
+                        isAddBookmarkLoading = false
+                    )
+                }
+            }
         }
     }
 
