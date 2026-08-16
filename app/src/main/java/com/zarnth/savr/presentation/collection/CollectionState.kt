@@ -9,6 +9,8 @@ data class CollectionState(
     val isLoading: Boolean = false,
     val error: String = "",
     val showCreateDialog: Boolean = false,
+    val isRenameDialogVisible: Boolean = false,
+    val renamingCollection: Collection? = null,
     val inputName: String = "",
     val selectedCollection: Collection? = null,
     val collectionBookmarks: List<Bookmark> = emptyList(),

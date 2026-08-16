@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,6 +43,7 @@ fun CollectionCard(
     collection: Collection,
     onClick: () -> Unit,
     onLongClick: () -> Unit = {},
+    onRenameClick: () -> Unit = {},
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     modifier: Modifier = Modifier
@@ -78,13 +81,34 @@ fun CollectionCard(
 
     Column(modifier = cardModifier) {
 
-        PhotoCollage(
-            imageUrls = collection.previewUrls,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.2f)
-                .clip(MaterialTheme.shapes.extraLarge)
-        )
+        Box {
+            PhotoCollage(
+                imageUrls = collection.previewUrls,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.2f)
+                    .clip(MaterialTheme.shapes.extraLarge)
+            )
+
+            if (!isSelectionMode) {
+                Surface(
+                    onClick = onRenameClick,
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(28.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.edit_icon),
+                        contentDescription = "Rename collection",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(5.dp)
+                    )
+                }
+            }
+        }
 
         Text(
             text = collection.name,

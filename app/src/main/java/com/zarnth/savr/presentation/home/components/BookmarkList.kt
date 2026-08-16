@@ -44,6 +44,8 @@ fun BookmarkList(
                 onLongClick = { viewModel.homeEvents(HomeEvents.ToggleSelection(item.id)) },
                 isSelected = item.id in selectedIds,
                 isSelectionMode = isSelectionMode,
+                isPinned = item.isPinned,
+                onPinToggle = { viewModel.homeEvents(HomeEvents.TogglePin(item.id)) },
                 url = item.url
             )
         }

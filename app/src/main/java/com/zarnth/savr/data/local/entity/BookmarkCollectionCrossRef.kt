@@ -1,5 +1,6 @@
 package com.zarnth.savr.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -25,5 +26,8 @@ import androidx.room.Index
 )
 data class BookmarkCollectionCrossRef(
     val bookmarkId: Long,
-    val collectionId: Long
+    val collectionId: Long,
+    @ColumnInfo(defaultValue = "0")
+    val isPinned: Boolean = false,
+    val pinnedAt: Long? = null
 )

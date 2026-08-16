@@ -2,6 +2,7 @@ package com.zarnth.savr.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -17,11 +18,20 @@ data class CollectionWithCount(
     val bookmarkCount: Int
 )
 
+data class BookmarkWithCollectionPin(
+    @Embedded val bookmark: BookmarkEntity,
+    val pinnedInCollection: Boolean,
+    val pinnedAtInCollection: Long?
+)
+
 @Dao
 interface CollectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCollection(collection: CollectionEntity): Long
+
+    @Query("UPDATE collections SET name = :name WHERE id = :id")
+    suspend fun renameCollection(id: Long, name: String)
 
     @Delete
     suspend fun deleteCollection(collection: CollectionEntity)
@@ -46,12 +56,12 @@ interface CollectionDao {
     suspend fun getPreviewUrlsForCollection(collectionId: Long): List<String>
 
     @Query("""
-        SELECT b.* FROM bookmarks b
+        SELECT b.*, bcc.isPinned AS pinnedInCollection, bcc.pinnedAt AS pinnedAtInCollection FROM bookmarks b
         INNER JOIN bookmark_collection_cross_ref bcc ON b.id = bcc.bookmarkId
         WHERE bcc.collectionId = :collectionId
         ORDER BY b.createdAt DESC
     """)
-    fun getBookmarksInCollection(collectionId: Long): Flow<List<BookmarkEntity>>
+    fun getBookmarksInCollection(collectionId: Long): Flow<List<BookmarkWithCollectionPin>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addBookmarkToCollection(crossRef: BookmarkCollectionCrossRef)
@@ -80,4 +90,15 @@ interface CollectionDao {
         )
     """)
     suspend fun isUrlInCollection(url: String, collectionId: Long): Boolean
+
+    @Query("UPDATE bookmark_collection_cross_ref SET isPinned = :isPinned, pinnedAt = :pinnedAt WHERE bookmarkId = :bookmarkId AND collectionId = :collectionId")
+    suspend fun setPinnedInCollection(bookmarkId: Long, collectionId: Long, isPinned: Boolean, pinnedAt: Long?)
+
+    @Query("""
+        SELECT b.url FROM bookmark_collection_cross_ref bcc
+        INNER JOIN bookmarks b ON b.id = bcc.bookmarkId
+        WHERE bcc.collectionId = :collectionId AND bcc.isPinned = 1
+        ORDER BY bcc.pinnedAt ASC
+    """)
+    suspend fun getPinnedBookmarkUrlsForCollection(collectionId: Long): List<String>
 }

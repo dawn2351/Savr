@@ -90,6 +90,10 @@ class BookmarkRepositoryImpl(
         collectionDao.deleteCollection(collection.toEntity())
     }
 
+    override suspend fun renameCollection(id: Long, name: String) {
+        collectionDao.renameCollection(id, name)
+    }
+
     override fun getAllCollections(): Flow<Resource<List<Collection>>> {
         return collectionDao.getAllCollections()
             .flatMapLatest { collections ->
@@ -112,7 +116,9 @@ class BookmarkRepositoryImpl(
     override fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>> {
         return collectionDao.getBookmarksInCollection(collectionId)
             .map { list ->
-                Resource.Success(list.map { it.toDomain() }) as Resource<List<Bookmark>>
+                Resource.Success(
+                    list.map { it.bookmark.toDomain().copy(isPinned = it.pinnedInCollection, pinnedAt = it.pinnedAtInCollection) }
+                ) as Resource<List<Bookmark>>
             }
             .onStart { emit(Resource.Loading()) }
             .catch { e -> emit(Resource.Error(e.message ?: "Unknown error")) }
@@ -144,5 +150,13 @@ class BookmarkRepositoryImpl(
 
     override suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?) {
         dao.updateTitleAndDescription(id, title, description)
+    }
+
+    override suspend fun setBookmarkPinned(id: Long, isPinned: Boolean, pinnedAt: Long?) {
+        dao.setPinned(id, isPinned, pinnedAt)
+    }
+
+    override suspend fun setBookmarkPinnedInCollection(bookmarkId: Long, collectionId: Long, isPinned: Boolean, pinnedAt: Long?) {
+        collectionDao.setPinnedInCollection(bookmarkId, collectionId, isPinned, pinnedAt)
     }
 }

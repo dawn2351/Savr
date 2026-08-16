@@ -153,6 +153,10 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                 }
             }
 
+            is HomeEvents.TogglePin -> {
+                togglePin(events.id)
+            }
+
             HomeEvents.SelectAll -> {
                 val allIds = _state.value.bookmarkData.map { it.id }.toSet()
                 _state.update {
@@ -236,6 +240,22 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
                 _state.update {
                     it.copy(error = e.message ?: "Delete failed")
                 }
+            }
+        }
+    }
+
+    private fun togglePin(id: Long) {
+        val bookmark = rawBookmarks.find { it.id == id } ?: return
+        val newPinned = !bookmark.isPinned
+        viewModelScope.launch {
+            try {
+                repository.setBookmarkPinned(
+                    id,
+                    newPinned,
+                    if (newPinned) System.currentTimeMillis() else null
+                )
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Pin failed") }
             }
         }
     }
@@ -467,11 +487,15 @@ class HomeViewModel(private val repository: BookmarkRepository) : ViewModel() {
     }
 
     private fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> {
-        return when (sortOrder) {
+        val sorted = when (sortOrder) {
             SortOrder.DATE_NEWEST -> bookmarks.sortedByDescending { it.createdAt }
             SortOrder.DATE_OLDEST -> bookmarks.sortedBy { it.createdAt }
             SortOrder.TITLE_ASC -> bookmarks.sortedBy { it.title?.lowercase() }
             SortOrder.TITLE_DESC -> bookmarks.sortedByDescending { it.title?.lowercase() }
         }
+        return sorted.sortedWith(
+            compareByDescending<Bookmark> { it.isPinned }
+                .thenBy { it.pinnedAt ?: Long.MAX_VALUE }
+        )
     }
 }

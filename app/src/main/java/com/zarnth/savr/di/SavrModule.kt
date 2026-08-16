@@ -30,7 +30,10 @@ val savrModule = module {
             .addMigrations(
                 BookmarkDatabase.MIGRATION_3_4,
                 BookmarkDatabase.MIGRATION_4_5,
-                BookmarkDatabase.MIGRATION_5_6
+                BookmarkDatabase.MIGRATION_5_6,
+                BookmarkDatabase.MIGRATION_6_7,
+                BookmarkDatabase.MIGRATION_7_8,
+                BookmarkDatabase.MIGRATION_9_8
             )
             .build()
     }

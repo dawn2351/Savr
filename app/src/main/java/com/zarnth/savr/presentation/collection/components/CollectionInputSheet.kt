@@ -31,7 +31,10 @@ fun CollectionInputSheet(
     onDismissRequest: () -> Unit,
     value: String,
     onTextChange: (String) -> Unit,
-    onSaveClick: () -> Unit
+    onSaveClick: () -> Unit,
+    title: String = "New Collection",
+    placeHolderText: String = "Collection name",
+    buttonText: String = "Create Collection"
 ) {
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -47,7 +50,7 @@ fun CollectionInputSheet(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "New Collection",
+                    text = title,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -68,7 +71,7 @@ fun CollectionInputSheet(
                         )
                     },
                     placeholder = {
-                        Text("Collection name")
+                        Text(placeHolderText)
                     },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Done
@@ -85,7 +88,7 @@ fun CollectionInputSheet(
                     enabled = value.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Create Collection")
+                    Text(buttonText)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

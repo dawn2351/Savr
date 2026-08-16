@@ -16,5 +16,8 @@ data class BookmarkEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val isHidden: Boolean = false,
     @ColumnInfo(defaultValue = "0")
-    val isCollectionOnly: Boolean = false
+    val isCollectionOnly: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val isPinned: Boolean = false,
+    val pinnedAt: Long? = null
 )

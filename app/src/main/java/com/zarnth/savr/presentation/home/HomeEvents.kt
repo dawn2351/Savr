@@ -25,6 +25,7 @@ sealed class HomeEvents {
     object DeselectAll : HomeEvents()
     object DeleteSelected : HomeEvents()
     object ClearSelection : HomeEvents()
+    data class TogglePin(val id: Long) : HomeEvents()
     object ShowCollectionPicker : HomeEvents()
     object HideCollectionPicker : HomeEvents()
     data class AddToCollection(val collectionId: Long) : HomeEvents()

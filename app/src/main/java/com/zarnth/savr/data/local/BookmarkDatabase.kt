@@ -14,7 +14,7 @@ import com.zarnth.savr.data.local.entity.CrashLogEntity
 
 @Database(
     entities = [BookmarkEntity::class, CollectionEntity::class, BookmarkCollectionCrossRef::class, CrashLogEntity::class],
-    version = 6
+    version = 8
 )
 abstract class BookmarkDatabase : RoomDatabase() {
 
@@ -54,6 +54,27 @@ abstract class BookmarkDatabase : RoomDatabase() {
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE `bookmarks` ADD COLUMN `isCollectionOnly` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `bookmarks` ADD COLUMN `isPinned` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE `bookmark_collection_cross_ref` ADD COLUMN `isPinned` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `bookmarks` ADD COLUMN `pinnedAt` INTEGER")
+                db.execSQL("ALTER TABLE `bookmark_collection_cross_ref` ADD COLUMN `pinnedAt` INTEGER")
+            }
+        }
+
+        val MIGRATION_9_8 = object : Migration(9, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `bookmark_tag_cross_ref`")
+                db.execSQL("DROP TABLE IF EXISTS `tags`")
             }
         }
     }

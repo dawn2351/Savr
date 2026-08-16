@@ -18,6 +18,7 @@ interface BookmarkRepository {
     suspend fun searchBookmarks(text: String): Flow<Resource<List<Bookmark>>>
 
     suspend fun createCollection(name: String): Long
+    suspend fun renameCollection(id: Long, name: String)
     suspend fun deleteCollection(collection: Collection)
     fun getAllCollections(): Flow<Resource<List<Collection>>>
     fun getBookmarksInCollection(collectionId: Long): Flow<Resource<List<Bookmark>>>
@@ -28,4 +29,6 @@ interface BookmarkRepository {
     suspend fun updateImageUrl(id: Long, imageUrl: String?)
     suspend fun updateMetadata(id: Long, title: String?, description: String?, imageUrl: String?)
     suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?)
+    suspend fun setBookmarkPinned(id: Long, isPinned: Boolean, pinnedAt: Long?)
+    suspend fun setBookmarkPinnedInCollection(bookmarkId: Long, collectionId: Long, isPinned: Boolean, pinnedAt: Long?)
 }

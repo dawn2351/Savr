@@ -45,6 +45,26 @@ class CollectionViewModel(
                 createCollection()
             }
 
+            is CollectionEvents.ShowRenameDialog -> {
+                _state.update {
+                    it.copy(
+                        renamingCollection = event.collection,
+                        isRenameDialogVisible = true,
+                        inputName = event.collection.name
+                    )
+                }
+            }
+
+            CollectionEvents.HideRenameDialog -> {
+                _state.update {
+                    it.copy(isRenameDialogVisible = false, renamingCollection = null, inputName = "")
+                }
+            }
+
+            CollectionEvents.RenameCollection -> {
+                renameCollection()
+            }
+
             is CollectionEvents.SelectCollection -> {
                 selectCollection(event.collection)
             }
@@ -135,6 +155,10 @@ class CollectionViewModel(
 
             CollectionEvents.SaveEditedBookmark -> {
                 saveEditedBookmark()
+            }
+
+            is CollectionEvents.TogglePinInCollection -> {
+                togglePinInCollection(event.id)
             }
 
             is CollectionEvents.ToggleDetailSelection -> {
@@ -263,12 +287,43 @@ class CollectionViewModel(
         }
     }
 
+    private fun togglePinInCollection(bookmarkId: Long) {
+        val collectionId = _state.value.selectedCollection?.id ?: return
+        val bookmark = _state.value.collectionBookmarks.find { it.id == bookmarkId } ?: return
+        val newPinned = !bookmark.isPinned
+        viewModelScope.launch {
+            try {
+                repository.setBookmarkPinnedInCollection(
+                    bookmarkId,
+                    collectionId,
+                    newPinned,
+                    if (newPinned) System.currentTimeMillis() else null
+                )
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Pin failed") }
+            }
+        }
+    }
+
     private fun createCollection() {
         val name = _state.value.inputName.trim()
         if (name.isEmpty()) return
         viewModelScope.launch {
             repository.createCollection(name)
             _state.update { it.copy(showCreateDialog = false, inputName = "") }
+        }
+    }
+
+    private fun renameCollection() {
+        val collection = _state.value.renamingCollection ?: return
+        val name = _state.value.inputName.trim()
+        if (name.isEmpty() || name == collection.name) {
+            _state.update { it.copy(isRenameDialogVisible = false, renamingCollection = null, inputName = "") }
+            return
+        }
+        viewModelScope.launch {
+            repository.renameCollection(collection.id, name)
+            _state.update { it.copy(isRenameDialogVisible = false, renamingCollection = null, inputName = "") }
         }
     }
 
@@ -411,11 +466,15 @@ class CollectionViewModel(
     }
 
     private fun sortBookmarks(bookmarks: List<Bookmark>, sortOrder: SortOrder): List<Bookmark> {
-        return when (sortOrder) {
+        val sorted = when (sortOrder) {
             SortOrder.DATE_NEWEST -> bookmarks.sortedByDescending { it.createdAt }
             SortOrder.DATE_OLDEST -> bookmarks.sortedBy { it.createdAt }
             SortOrder.TITLE_ASC -> bookmarks.sortedBy { it.title?.lowercase() }
             SortOrder.TITLE_DESC -> bookmarks.sortedByDescending { it.title?.lowercase() }
         }
+        return sorted.sortedWith(
+            compareByDescending<Bookmark> { it.isPinned }
+                .thenBy { it.pinnedAt ?: Long.MAX_VALUE }
+        )
     }
 }

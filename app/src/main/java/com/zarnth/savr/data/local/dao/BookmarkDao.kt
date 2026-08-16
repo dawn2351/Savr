@@ -58,6 +58,9 @@ interface BookmarkDao {
     @Query("UPDATE bookmarks SET title = :title, description = :description WHERE id = :id")
     suspend fun updateTitleAndDescription(id: Long, title: String?, description: String?)
 
+    @Query("UPDATE bookmarks SET isPinned = :isPinned, pinnedAt = :pinnedAt WHERE id = :id")
+    suspend fun setPinned(id: Long, isPinned: Boolean, pinnedAt: Long?)
+
     @Query("SELECT * FROM bookmarks WHERE isHidden = 0")
     suspend fun getBookmarksOnce(): List<BookmarkEntity>
 

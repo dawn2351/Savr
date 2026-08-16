@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,10 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.core.net.toUri
+import com.zarnth.savr.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -47,6 +51,8 @@ fun BookmarkListItem(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
+    isPinned: Boolean = false,
+    onPinToggle: (() -> Unit)? = null,
     url: String
 ) {
     val host = url.toUri().host.orEmpty()
@@ -133,6 +139,24 @@ fun BookmarkListItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
                 )
+
+                if (onPinToggle != null && !isSelectionMode) {
+                    IconButton(
+                        onClick = onPinToggle,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.pin_icon),
+                            contentDescription = if (isPinned) "Unpin bookmark" else "Pin bookmark",
+                            tint = if (isPinned) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            },
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(Modifier.height(2.dp))

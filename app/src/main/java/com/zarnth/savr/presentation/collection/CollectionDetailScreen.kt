@@ -159,6 +159,8 @@ fun CollectionDetailScreen(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
+                            isPinned = item.isPinned,
+                            onPinToggle = { viewModel.onEvent(CollectionEvents.TogglePinInCollection(item.id)) },
                             url = item.url
                         )
                     }
@@ -190,6 +192,8 @@ fun CollectionDetailScreen(
                             onLongClick = { viewModel.onEvent(CollectionEvents.ToggleDetailSelection(item.id)) },
                             isSelected = item.id in state.detailSelectedIds,
                             isSelectionMode = state.isDetailSelectionMode,
+                            isPinned = item.isPinned,
+                            onPinToggle = { viewModel.onEvent(CollectionEvents.TogglePinInCollection(item.id)) },
                             url = item.url
                         )
                     }

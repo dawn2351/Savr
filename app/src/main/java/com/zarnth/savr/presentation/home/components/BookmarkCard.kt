@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,11 +36,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.core.net.toUri
-
+import com.zarnth.savr.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -52,6 +55,8 @@ fun BookmarkCard(
     onLongClick: () -> Unit,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
+    isPinned: Boolean = false,
+    onPinToggle: (() -> Unit)? = null,
     url: String
 ) {
 
@@ -144,8 +149,27 @@ fun BookmarkCard(
                 style = MaterialTheme.typography.labelLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
             )
+
+            if (onPinToggle != null && !isSelectionMode) {
+                IconButton(
+                    onClick = onPinToggle,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.pin_icon),
+                        contentDescription = if (isPinned) "Unpin bookmark" else "Pin bookmark",
+                        tint = if (isPinned) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        },
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
         }
 
 

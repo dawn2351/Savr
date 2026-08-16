@@ -79,6 +79,7 @@ fun CollectionScreen(
                             onCollectionClick(collection.id)
                         },
                         onLongClick = { viewModel.onEvent(CollectionEvents.ToggleSelection(collection.id)) },
+                        onRenameClick = { viewModel.onEvent(CollectionEvents.ShowRenameDialog(collection)) },
                         isSelected = collection.id in state.selectedIds,
                         isSelectionMode = state.isSelectionMode,
                         modifier = Modifier.animateItem()
@@ -95,5 +96,16 @@ fun CollectionScreen(
         value = state.inputName,
         onTextChange = { viewModel.onEvent(CollectionEvents.InputNameChanged(it)) },
         onSaveClick = { viewModel.onEvent(CollectionEvents.CreateCollection) }
+    )
+
+    CollectionInputSheet(
+        showBottomSheet = state.isRenameDialogVisible,
+        onDismissRequest = { viewModel.onEvent(CollectionEvents.HideRenameDialog) },
+        value = state.inputName,
+        onTextChange = { viewModel.onEvent(CollectionEvents.InputNameChanged(it)) },
+        onSaveClick = { viewModel.onEvent(CollectionEvents.RenameCollection) },
+        title = "Rename Collection",
+        placeHolderText = "New collection name",
+        buttonText = "Save"
     )
 }

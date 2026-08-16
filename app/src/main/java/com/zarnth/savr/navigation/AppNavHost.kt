@@ -42,11 +42,15 @@ fun AppNavHost(
         onBack = { currentBackStack.removeLastOrNull() },
         entryProvider = { route ->
             when (route) {
-                is AppRoute.Home -> NavEntry(route) { homeScreen() }
+                is AppRoute.Home -> NavEntry(route) {
+                    homeScreen()
+                }
                 is AppRoute.Collections -> NavEntry(route) {
                     collectionsScreen { id -> currentBackStack.add(AppRoute.CollectionDetail(id)) }
                 }
-                is AppRoute.CollectionDetail -> NavEntry(route) { collectionDetailScreen(route.collectionId) }
+                is AppRoute.CollectionDetail -> NavEntry(route) {
+                    collectionDetailScreen(route.collectionId)
+                }
                 is AppRoute.Settings -> NavEntry(route) {
                     settingsScreen { currentBackStack.add(AppRoute.CrashLogs) }
                 }

@@ -8,13 +8,16 @@ data class BackupBookmark(
     val title: String? = null,
     val description: String? = null,
     val imageUrl: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isPinned: Boolean = false,
+    val pinnedAt: Long? = null
 )
 
 @Serializable
 data class BackupCollection(
     val name: String,
-    val bookmarkUrls: List<String> = emptyList()
+    val bookmarkUrls: List<String> = emptyList(),
+    val pinnedBookmarkUrls: List<String> = emptyList()
 )
 
 @Serializable

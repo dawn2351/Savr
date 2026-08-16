@@ -72,10 +72,14 @@ class BackupManager(
                 bookmarkDao.getAllBookmarks(),
                 collectionDao.getAllCollections()
             ) { bookmarks, collections ->
-                val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
+                val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt, isPinned = it.isPinned, pinnedAt = it.pinnedAt) }
                 val backupCollections = collections.mapNotNull { collection ->
                     val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
-                    if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
+                    if (collection.name.isNotBlank()) BackupCollection(
+                        name = collection.name,
+                        bookmarkUrls = urls,
+                        pinnedBookmarkUrls = collectionDao.getPinnedBookmarkUrlsForCollection(collection.id)
+                    ) else null
                 }
                 BackupData(bookmarks = backupBookmarks, collections = backupCollections)
             }
@@ -138,10 +142,14 @@ class BackupManager(
         val bookmarks = bookmarkDao.getBookmarksOnce()
         val collections = collectionDao.getAllCollectionsRaw().first()
 
-        val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt) }
+        val backupBookmarks = bookmarks.map { BackupBookmark(url = it.url, title = it.title, description = it.description, imageUrl = it.imageUrl, createdAt = it.createdAt, isPinned = it.isPinned, pinnedAt = it.pinnedAt) }
         val backupCollections = collections.mapNotNull { collection ->
             val urls = collectionDao.getBookmarkUrlsForCollection(collection.id)
-            if (collection.name.isNotBlank()) BackupCollection(name = collection.name, bookmarkUrls = urls) else null
+            if (collection.name.isNotBlank()) BackupCollection(
+                name = collection.name,
+                bookmarkUrls = urls,
+                pinnedBookmarkUrls = collectionDao.getPinnedBookmarkUrlsForCollection(collection.id)
+            ) else null
         }
 
         val data = BackupData(bookmarks = backupBookmarks, collections = backupCollections)
@@ -259,11 +267,14 @@ class BackupManager(
     suspend fun importFromJson(jsonString: String) {
         val backupData = json.decodeFromString<BackupData>(jsonString)
 
-        val existingUrls = bookmarkDao.getBookmarksOnce().map { it.url }.toSet()
+        val existingByUrl = bookmarkDao.getBookmarksOnce().associateBy { it.url }
 
         for (b in backupData.bookmarks) {
-            if (b.url !in existingUrls) {
-                bookmarkDao.insertWithReturn(BookmarkEntity(url = b.url, title = b.title, description = b.description, imageUrl = b.imageUrl, createdAt = b.createdAt))
+            val existing = existingByUrl[b.url]
+            if (existing == null) {
+                bookmarkDao.insertWithReturn(BookmarkEntity(url = b.url, title = b.title, description = b.description, imageUrl = b.imageUrl, createdAt = b.createdAt, isPinned = b.isPinned, pinnedAt = b.pinnedAt))
+            } else if (b.isPinned) {
+                bookmarkDao.setPinned(existing.id, true, b.pinnedAt)
             }
         }
 
@@ -279,6 +290,14 @@ class BackupManager(
             c.bookmarkUrls.forEach { url ->
                 bookmarkMap[url]?.let { bm ->
                     collectionDao.addBookmarkToCollection(BookmarkCollectionCrossRef(bm.id, collectionId))
+                }
+            }
+            if (c.pinnedBookmarkUrls.isNotEmpty()) {
+                val base = System.currentTimeMillis()
+                c.pinnedBookmarkUrls.forEachIndexed { index, url ->
+                    bookmarkMap[url]?.let { bm ->
+                        collectionDao.setPinnedInCollection(bm.id, collectionId, true, base + index)
+                    }
                 }
             }
         }
